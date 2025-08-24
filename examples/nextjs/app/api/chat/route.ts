@@ -2,28 +2,57 @@ import { NextRequest } from "next/server";
 import {
   openAI,
   withRetry,
-  withFallback,
   type ChatRequest,
   type ChatStreamChunk,
 } from "@tetherai/provider-openai";
 
-const provider = withFallback(
-  [
-    withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), {
-      retries: 2,
-      baseMs: 300,
-      factor: 2,
-      jitter: true,
-    }),
-  ],
-  { onFallback: (err, idx) => console.warn(`Provider ${idx} failed`, err) }
-);
-
 export const runtime = "edge";
 
+/** Type guards */
+type Role = "user" | "assistant" | "system" | "tool";
+
+function isRole(x: unknown): x is Role {
+  return (
+    typeof x === "string" &&
+    (x === "user" || x === "assistant" || x === "system" || x === "tool")
+  );
+}
+
+function isChatMessage(x: unknown): x is { role: Role; content: string } {
+  return (
+    typeof x === "object" &&
+    x !== null &&
+    "role" in x &&
+    "content" in x &&
+    isRole((x as { role: unknown }).role) &&
+    typeof (x as { content: unknown }).content === "string"
+  );
+}
+
+function isChatRequest(x: unknown): x is ChatRequest {
+  if (
+    typeof x !== "object" ||
+    x === null ||
+    !("model" in x) ||
+    !("messages" in x)
+  ) {
+    return false;
+  }
+
+  const model = (x as { model: unknown }).model;
+  const messages = (x as { messages: unknown }).messages;
+
+  return (
+    typeof model === "string" &&
+    Array.isArray(messages) &&
+    messages.every(isChatMessage)
+  );
+}
+
+/** SSE helper (typed) */
 function toSSEStream(iterable: AsyncIterable<ChatStreamChunk>) {
   const encoder = new TextEncoder();
-  return new ReadableStream({
+  return new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
         for await (const chunk of iterable) {
@@ -35,10 +64,10 @@ function toSSEStream(iterable: AsyncIterable<ChatStreamChunk>) {
           encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`)
         );
       } catch (e) {
-        const err = e instanceof Error ? e.message : "unknown error";
+        const msg = e instanceof Error ? e.message : "error";
         controller.enqueue(
           encoder.encode(
-            `event: error\ndata: ${JSON.stringify({ message: err })}\n\n`
+            `event: error\ndata: ${JSON.stringify({ message: msg })}\n\n`
           )
         );
       } finally {
@@ -48,12 +77,35 @@ function toSSEStream(iterable: AsyncIterable<ChatStreamChunk>) {
   });
 }
 
-export async function POST(req: NextRequest) {
-  const body = (await req.json()) as Partial<ChatRequest>;
-  const model = body.model ?? "gpt-4o-mini";
-  const messages: ChatRequest["messages"] = body.messages ?? [];
+/** Provider with retry */
+const provider = withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), {
+  retries: 2,
+});
 
-  const stream = provider.streamChat({ model, messages });
+export async function POST(req: NextRequest) {
+  // Parse body as unknown, then safely coerce
+  const raw: unknown = await req.json();
+
+  let payload: ChatRequest;
+  if (isChatRequest(raw)) {
+    payload = raw;
+  } else {
+    // best-effort fallback: accept minimal {model, messages} if present
+    const model =
+      typeof (raw as Record<string, unknown>)?.model === "string"
+        ? ((raw as Record<string, unknown>).model as string)
+        : "gpt-4o-mini";
+    const messagesRaw = (raw as Record<string, unknown>)?.messages;
+    const messages = Array.isArray(messagesRaw)
+      ? messagesRaw.filter(isChatMessage)
+      : [];
+    payload = { model, messages };
+  }
+
+  const stream = provider.streamChat({
+    model: payload.model,
+    messages: payload.messages,
+  });
 
   return new Response(toSSEStream(stream), {
     headers: {
