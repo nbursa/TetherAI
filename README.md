@@ -14,7 +14,7 @@ Think of it as _“Express for AI providers”_.
 1. Install a provider package (**pnpm preferred**; npm or yarn also work):
 
    ```bash
-   pnpm install @tetherai/provider-openai
+   pnpm install @tetherai/openai
    ```
 
 2. Run the Next.js example locally:
@@ -35,7 +35,7 @@ TetherAI makes it easy to compose AI provider clients and middleware.
 ### Create a Provider
 
 ```ts
-import { openAI } from "@tetherai/provider-openai";
+import { openAI } from "@tetherai/openai";
 
 const provider = openAI({ apiKey: process.env.OPENAI_API_KEY! });
 ```
@@ -43,7 +43,7 @@ const provider = openAI({ apiKey: process.env.OPENAI_API_KEY! });
 ### Add Retry and Fallback
 
 ```ts
-import { withRetry, withFallback } from "@tetherai/provider-openai";
+import { withRetry, withFallback } from "@tetherai/openai";
 
 const resilientProvider = withFallback([
   withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), { retries: 2 }),
@@ -53,7 +53,7 @@ const resilientProvider = withFallback([
 ### Stream a Chat Completion
 
 ```ts
-import type { ChatRequest } from "@tetherai/provider-openai";
+import type { ChatRequest } from "@tetherai/openai";
 
 const req: ChatRequest = {
   model: "gpt-4o-mini",

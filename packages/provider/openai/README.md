@@ -1,6 +1,6 @@
 # OpenAI provider for TetherAI
 
-## @tetherai/provider-openai
+## @tetherai/openai
 
 OpenAI provider package for **TetherAI**.
 
@@ -12,7 +12,7 @@ It follows the common `Provider` interface defined by TetherAI and supports midd
 ## Installation
 
 ```bash
-pnpm install @tetherai/provider-openai
+pnpm install @tetherai/openai
 # or: npm install / yarn install
 ```
 
@@ -23,7 +23,7 @@ pnpm install @tetherai/provider-openai
 ### Basic Provider
 
 ```ts
-import { openAI } from "@tetherai/provider-openai";
+import { openAI } from "@tetherai/openai";
 
 const provider = openAI({ apiKey: process.env.OPENAI_API_KEY! });
 
@@ -40,7 +40,7 @@ for await (const chunk of provider.streamChat(req)) {
 ### With Retry Middleware
 
 ```ts
-import { openAI, withRetry } from "@tetherai/provider-openai";
+import { openAI, withRetry } from "@tetherai/openai";
 
 const provider = withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), {
   retries: 2,
@@ -50,7 +50,7 @@ const provider = withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), {
 ### With Fallback Middleware
 
 ```ts
-import { openAI, withFallback, withRetry } from "@tetherai/provider-openai";
+import { openAI, withFallback, withRetry } from "@tetherai/openai";
 
 const provider = withFallback([
   withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), { retries: 2 }),

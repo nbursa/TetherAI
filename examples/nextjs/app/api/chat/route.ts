@@ -4,7 +4,8 @@ import {
   withRetry,
   type ChatRequest,
   type ChatStreamChunk,
-} from "@tetherai/provider-openai";
+  type Provider,
+} from "@tetherai/openai";
 
 export const runtime = "edge";
 
@@ -78,9 +79,20 @@ function toSSEStream(iterable: AsyncIterable<ChatStreamChunk>) {
 }
 
 /** Provider with retry */
-const provider = withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), {
-  retries: 2,
-});
+if (
+  typeof openAI !== "function" ||
+  typeof withRetry !== "function" ||
+  typeof process.env.OPENAI_API_KEY !== "string"
+) {
+  throw new Error("Required OpenAI API key or functions are not available.");
+}
+
+const provider: Provider = withRetry(
+  openAI({ apiKey: process.env.OPENAI_API_KEY }),
+  {
+    retries: 2,
+  }
+);
 
 export async function POST(req: NextRequest) {
   // Parse body as unknown, then safely coerce
@@ -88,7 +100,19 @@ export async function POST(req: NextRequest) {
 
   let payload: ChatRequest;
   if (isChatRequest(raw)) {
-    payload = raw;
+    const model =
+      typeof (raw as Record<string, unknown>)?.model === "string"
+        ? ((raw as Record<string, unknown>).model as string)
+        : "gpt-4o-mini";
+    const messages = Array.isArray((raw as Record<string, unknown>)?.messages)
+      ? ((raw as Record<string, unknown>).messages as unknown[]).filter(
+          isChatMessage
+        )
+      : [];
+    payload = {
+      model,
+      messages,
+    };
   } else {
     // best-effort fallback: accept minimal {model, messages} if present
     const model =
@@ -102,7 +126,7 @@ export async function POST(req: NextRequest) {
     payload = { model, messages };
   }
 
-  const stream = provider.streamChat({
+  const stream: AsyncIterable<ChatStreamChunk> = provider.streamChat({
     model: payload.model,
     messages: payload.messages,
   });
