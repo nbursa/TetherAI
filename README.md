@@ -1,7 +1,5 @@
 # TetherAI
 
-[![npm version](https://img.shields.io/npm/v/@tetherai/openai.svg)](https://www.npmjs.com/package/@tetherai/openai)
-[![npm downloads](https://img.shields.io/npm/dm/@tetherai/openai.svg)](https://www.npmjs.com/package/@tetherai/openai)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 TetherAI is a modular **TypeScript** platform for integrating different AI providers.  
@@ -84,6 +82,9 @@ Make sure to set OPENAI_API_KEY in your environment (or .env.local in Next.js).
 - [@tetherai/openai](https://www.npmjs.com/package/@tetherai/openai)  
   Streaming-first OpenAI adapter with retry & fallback middleware.\
   [README](https://github.com/nbursa/TetherAI/blob/main/packages/provider/openai/README.md)
+
+  [![npm version](https://img.shields.io/npm/v/@tetherai/openai.svg)](https://www.npmjs.com/package/@tetherai/openai)
+  [![npm downloads](https://img.shields.io/npm/dm/@tetherai/openai.svg)](https://www.npmjs.com/package/@tetherai/openai)
 
 ## Examples
 
