@@ -1,6 +1,9 @@
 {
   "name": "@tetherai/openai",
   "version": "0.0.1",
+  "description": "OpenAI provider for TetherAI (streaming-first + middleware).",
+  "license": "MIT",
+  "repository": "github:nbursa/TetherAI",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,9 +14,13 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
+  "sideEffects": false,
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "pnpm run build"
   }
 }
