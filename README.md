@@ -1,6 +1,7 @@
 # TetherAI
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Build](https://github.com/nbursa/TetherAI/actions/workflows/ci.yml/badge.svg)](https://github.com/nbursa/TetherAI/actions)
 
 TetherAI is a modular **TypeScript** platform for integrating different AI providers.  
 It focuses on **simplicity**, **streaming‑first APIs**, and **composable middleware** such as **retry** and **fallback**.  
