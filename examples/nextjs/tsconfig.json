@@ -6,6 +6,7 @@
     "jsx": "preserve",
     "strict": true,
     "esModuleInterop": true,
+    "allowJs": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "types": [
@@ -31,7 +32,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "next.config.mjs"  ],
   "exclude": [
     "node_modules"
   ]
