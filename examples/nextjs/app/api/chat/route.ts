@@ -1,8 +1,19 @@
 import { NextRequest } from "next/server";
-import { openAI } from "@tetherai/provider-openai";
-import type { ChatRequest, ChatStreamChunk } from "@tetherai/provider-openai";
+import {
+  openAI,
+  withRetry,
+  type ChatRequest,
+  type ChatStreamChunk,
+} from "@tetherai/provider-openai";
 
 export const runtime = "edge";
+
+const provider = withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), {
+  retries: 2,
+  baseMs: 300,
+  factor: 2,
+  jitter: true,
+});
 
 function toSSEStream(iterable: AsyncIterable<ChatStreamChunk>) {
   const encoder = new TextEncoder();
@@ -35,7 +46,6 @@ export async function POST(req: NextRequest) {
   const body = (await req.json()) as Partial<ChatRequest>;
   const model = body.model ?? "gpt-4o-mini";
   const messages = body.messages ?? [];
-  const provider = openAI({ apiKey: process.env.OPENAI_API_KEY! });
 
   const stream = provider.streamChat({ model, messages });
 

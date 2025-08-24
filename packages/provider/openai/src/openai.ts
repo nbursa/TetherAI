@@ -1,6 +1,15 @@
 import { ChatRequest, ChatStreamChunk, Provider } from "./types";
 import { sseToIterable } from "./utils/sse";
 
+export class OpenAIError extends Error {
+  readonly status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "OpenAIError";
+    this.status = status;
+  }
+}
+
 export interface OpenAIOptions {
   apiKey: string;
   baseURL?: string; // defaults to https://api.openai.com/v1
@@ -31,12 +40,13 @@ export function openAI(opts: OpenAIOptions): Provider {
         let message = `OpenAI error: ${res.status}`;
         try {
           const err = await res.json();
-          if (err?.error?.message)
+          if (err?.error?.message) {
             message = `OpenAI error ${res.status}: ${err.error.message}`;
+          }
         } catch {
-          /* ignore */
+          // ignore
         }
-        throw new Error(message);
+        throw new OpenAIError(message, res.status);
       }
 
       // Parse SSE stream
