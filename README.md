@@ -112,15 +112,7 @@ Make sure to set OPENAI_API_KEY in your environment.
 See examples/ for ready‑to‑run demos:
 
 - Next.js Chat – Edge runtime chat UI with streaming and retry/fallback middleware.
-
-### Quick run
-
-```bash
-cd examples/nextjs
-pnpm install
-export OPENAI_API_KEY=sk-...
-pnpm dev
-```
+- Node.js Server – Minimal backend HTTP server exposing `/chat` endpoint with SSE streaming.
 
 ## License
 

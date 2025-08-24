@@ -1,4 +1,4 @@
-# @tetherai/openai v0.0.2
+# @tetherai/openai
 
 >OpenAI provider package for **TetherAI**.
 
@@ -60,7 +60,10 @@ const provider = withFallback([
 
 ## Examples
 
-See [TetherAI examples](https://github.com/nbursa/TetherAI/tree/main/examples) for ready-to-run demos, including a Next.js chat app.
+See [examples](https://github.com/nbursa/TetherAI/tree/main/examples) for ready-to-run demos:
+
+- [Next.js chat app](https://github.com/nbursa/TetherAI/tree/main/examples/nextjs)
+- [Node.js server](https://github.com/nbursa/TetherAI/tree/main/examples/node)
 
 ## License
 
