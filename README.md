@@ -13,20 +13,20 @@ Think of it as _“Express for AI providers”_.
 
 1. Install a provider package (**pnpm preferred**; npm or yarn also work):
 
-```bash
-pnpm install @tetherai/provider-openai
-```
+    ```bash
+    pnpm install @tetherai/provider-openai
+    ```
 
 2. Run the Next.js example locally:
 
-```bash
-cd examples/nextjs
-pnpm install
-export OPENAI_API_KEY=sk-...
-pnpm dev
-```
+    ```bash
+    cd examples/nextjs
+    pnpm install
+    export OPENAI_API_KEY=sk-...
+    pnpm dev
+    ```
 
-3. Open http://localhost:3000.
+3. Open <http://localhost:3000>.
 
 ## Usage
 
@@ -47,7 +47,6 @@ import { withRetry, withFallback } from "@tetherai/provider-openai";
 
 const resilientProvider = withFallback([
   withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), { retries: 2 }),
-  // later: add other providers here
 ]);
 ```
 
@@ -70,18 +69,19 @@ Make sure to set OPENAI_API_KEY in your environment (or .env.local in Next.js).
 
 ## Features
 
- • Streaming‑first – token stream via AsyncIterable
- • Retry middleware – automatic retry on transient errors (429, 5xx)
- • Fallback middleware – try multiple providers/models in order
- • Edge compatible – built on fetch, ReadableStream, modern runtimes
- • Strict TypeScript – 100% typed, no any
+- Streaming‑first – token stream via AsyncIterable
+- Retry middleware – automatic retry on transient errors (429, 5xx)
+- Fallback middleware – try multiple providers/models in order
+- Edge compatible – built on fetch, ReadableStream, modern runtimes
+- Strict TypeScript – 100% typed, no any
 
 ## Examples
 
 See examples/ for ready‑to‑run demos:
- • Next.js Chat – Edge runtime chat UI with streaming and retry/fallback middleware.
 
-### Quick run:
+- Next.js Chat – Edge runtime chat UI with streaming and retry/fallback middleware.
+
+### Quick run
 
 ```bash
 cd examples/nextjs
