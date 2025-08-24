@@ -2,8 +2,8 @@
 
 [![npm version](https://img.shields.io/npm/v/@tetherai/openai.svg)](https://www.npmjs.com/package/@tetherai/openai)
 [![npm downloads](https://img.shields.io/npm/dm/@tetherai/openai.svg)](https://www.npmjs.com/package/@tetherai/openai)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Build](https://github.com/nbursa/TetherAI/actions/workflows/ci.yml/badge.svg)](https://github.com/nbursa/TetherAI/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > OpenAI provider package for **TetherAI**.
 
@@ -33,6 +33,16 @@ yarn add @tetherai/openai
 
 Basic usage:
 
+### Minimal usage
+
+Set your API key:
+
+```bash
+export OPENAI_API_KEY=sk-...
+```
+
+Use in Node.js:
+
 ```ts
 import { openAI } from "@tetherai/openai";
 
@@ -43,6 +53,40 @@ for await (const chunk of provider.streamChat({
   messages: [{ role: "user", content: "Hello!" }],
 })) {
   process.stdout.write(chunk.delta);
+}
+```
+
+Use in Next.js (Edge API route)
+
+```ts
+// app/api/chat/route.ts
+import { NextRequest } from "next/server";
+import { openAI, withRetry } from "@tetherai/openai";
+
+export const runtime = "edge";
+
+const provider = withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), {
+  retries: 2,
+});
+
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const stream = provider.streamChat({
+    model: "gpt-4o-mini",
+    messages: body.messages,
+  });
+
+  return new Response(new ReadableStream({
+    async start(controller) {
+      const encoder = new TextEncoder();
+      for await (const chunk of stream) {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+      }
+      controller.close();
+    },
+  }), {
+    headers: { "Content-Type": "text/event-stream" },
+  });
 }
 ```
 
