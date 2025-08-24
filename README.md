@@ -82,7 +82,8 @@ Make sure to set OPENAI_API_KEY in your environment (or .env.local in Next.js).
 ## Available Providers
 
 - [@tetherai/openai](https://www.npmjs.com/package/@tetherai/openai)  
-  Streaming-first OpenAI adapter with retry & fallback middleware.
+  Streaming-first OpenAI adapter with retry & fallback middleware.\
+  [README](https://github.com/nbursa/TetherAI/blob/main/packages/provider/openai/README.md)
 
 ## Examples
 
