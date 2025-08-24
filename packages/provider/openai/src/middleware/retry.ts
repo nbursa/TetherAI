@@ -2,10 +2,10 @@ import type { Provider, ChatRequest, ChatStreamChunk } from "../types";
 import { OpenAIError } from "../openai";
 
 export interface RetryOptions {
-  retries?: number; // number of retry attempts
-  baseMs?: number; // initial backoff in ms
-  factor?: number; // exponential factor
-  jitter?: boolean; // add +/- 20% jitter
+  retries?: number;
+  baseMs?: number;
+  factor?: number;
+  jitter?: boolean;
 }
 
 function isTransientError(e: unknown): boolean {
@@ -35,7 +35,7 @@ export function withRetry(
       signal?: AbortSignal
     ): AsyncIterable<ChatStreamChunk> {
       let attempt = 0;
-      // eslint-disable-next-line no-constant-condition
+
       while (true) {
         try {
           for await (const chunk of provider.streamChat(req, signal)) {

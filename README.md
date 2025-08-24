@@ -13,18 +13,18 @@ Think of it as _“Express for AI providers”_.
 
 1. Install a provider package (**pnpm preferred**; npm or yarn also work):
 
-    ```bash
-    pnpm install @tetherai/provider-openai
-    ```
+   ```bash
+   pnpm install @tetherai/provider-openai
+   ```
 
 2. Run the Next.js example locally:
 
-    ```bash
-    cd examples/nextjs
-    pnpm install
-    export OPENAI_API_KEY=sk-...
-    pnpm dev
-    ```
+   ```bash
+   cd examples/nextjs
+   pnpm install
+   export OPENAI_API_KEY=sk-...
+   pnpm dev
+   ```
 
 3. Open <http://localhost:3000>.
 
@@ -92,4 +92,4 @@ pnpm dev
 
 ## License
 
-[MIT](LICENCE)
+[MIT](LICENSE)

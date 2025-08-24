@@ -16,6 +16,39 @@ export interface OpenAIOptions {
   fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 }
 
+interface OpenAIErrorBody {
+  error?: { message?: string };
+}
+
+function isOpenAIErrorBody(x: unknown): x is OpenAIErrorBody {
+  return (
+    typeof x === "object" &&
+    x !== null &&
+    "error" in x &&
+    typeof (x as { error?: unknown }).error === "object"
+  );
+}
+
+interface OpenAIStreamJSON {
+  choices?: Array<{
+    delta?: { content?: string };
+  }>;
+}
+
+function getDeltaContent(x: unknown): string {
+  if (
+    typeof x === "object" &&
+    x !== null &&
+    "choices" in x &&
+    Array.isArray((x as { choices: unknown }).choices)
+  ) {
+    const choices = (x as OpenAIStreamJSON).choices;
+    const delta = choices?.[0]?.delta?.content;
+    return typeof delta === "string" ? delta : "";
+  }
+  return "";
+}
+
 // OpenAI Chat Completions streaming provider
 export function openAI(opts: OpenAIOptions): Provider {
   const baseURL = opts.baseURL ?? "https://api.openai.com/v1";
@@ -39,12 +72,15 @@ export function openAI(opts: OpenAIOptions): Provider {
       if (!res.ok) {
         let message = `OpenAI error: ${res.status}`;
         try {
-          const err = await res.json();
-          if (err?.error?.message) {
-            message = `OpenAI error ${res.status}: ${err.error.message}`;
+          const raw: unknown = await res.json();
+          if (
+            isOpenAIErrorBody(raw) &&
+            typeof raw.error?.message === "string"
+          ) {
+            message = `OpenAI error ${res.status}: ${raw.error.message}`;
           }
         } catch {
-          // ignore
+          // ignore parse errors
         }
         throw new OpenAIError(message, res.status);
       }
@@ -56,8 +92,8 @@ export function openAI(opts: OpenAIOptions): Provider {
           break;
         }
         try {
-          const json = JSON.parse(data);
-          const delta = json?.choices?.[0]?.delta?.content ?? "";
+          const json: unknown = JSON.parse(data);
+          const delta = getDeltaContent(json);
           if (delta) {
             yield { delta };
           }

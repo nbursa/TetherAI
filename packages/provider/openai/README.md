@@ -42,10 +42,9 @@ for await (const chunk of provider.streamChat(req)) {
 ```ts
 import { openAI, withRetry } from "@tetherai/provider-openai";
 
-const provider = withRetry(
-  openAI({ apiKey: process.env.OPENAI_API_KEY! }),
-  { retries: 2 }
-);
+const provider = withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), {
+  retries: 2,
+});
 ```
 
 ### With Fallback Middleware

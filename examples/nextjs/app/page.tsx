@@ -113,7 +113,7 @@ export default function Page() {
           placeholder="Ask something..."
           style={{ flex: 1, padding: 8 }}
         />
-        <button onClick={send} disabled={streaming}>
+        <button onClick={() => void send()} disabled={streaming}>
           Send
         </button>
         <button onClick={abort} disabled={!streaming}>
