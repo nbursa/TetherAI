@@ -1,9 +1,6 @@
 import { NextRequest } from "next/server";
-import { openAI } from "../../../../../packages/provider/openai/src/openai";
-import type {
-  ChatRequest,
-  ChatStreamChunk,
-} from "../../../../../packages/provider/openai/src/types";
+import { openAI } from "@tetherai/provider-openai";
+import type { ChatRequest, ChatStreamChunk } from "@tetherai/provider-openai";
 
 export const runtime = "edge";
 

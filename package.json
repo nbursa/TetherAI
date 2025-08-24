@@ -1,0 +1,11 @@
+{
+  "name": "tetherai",
+  "private": true,
+  "workspaces": [
+    "packages/*/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "npm -w @tetherai/provider-openai run build"
+  }
+}
