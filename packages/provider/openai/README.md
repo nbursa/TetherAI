@@ -1,13 +1,16 @@
-# OpenAI provider for TetherAI
+# @tetherai/openai v0.0.2
 
-## @tetherai/openai
+>OpenAI provider package for **TetherAI**.
 
-OpenAI provider package for **TetherAI**.
+This package implements a streaming-first adapter for the OpenAI Chat Completions API. It follows the common `Provider` interface defined by TetherAI and supports middleware such as retry and fallback.
 
-This package implements a streaming-first adapter for the OpenAI Chat Completions API.  
-It follows the common `Provider` interface defined by TetherAI and supports middleware such as retry and fallback.
+## Features
 
----
+- **Streaming-first**: consume responses via `AsyncIterable`  
+- **Retry middleware**: automatic retries for transient errors (429, 5xx)  
+- **Fallback middleware**: chain multiple providers for resilience  
+- **Edge runtime compatible**: works in Next.js Edge, Vercel, Cloudflare Workers  
+- **Strict TypeScript types**: fully typed, no `any`  
 
 ## Installation
 
@@ -15,8 +18,6 @@ It follows the common `Provider` interface defined by TetherAI and supports midd
 pnpm install @tetherai/openai
 # or: npm install / yarn install
 ```
-
----
 
 ## Usage
 
@@ -54,28 +55,13 @@ import { openAI, withFallback, withRetry } from "@tetherai/openai";
 
 const provider = withFallback([
   withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), { retries: 2 }),
-  // add other providers here in the future
 ]);
 ```
 
----
-
-## Features
-
-- **Streaming-first** via `AsyncIterable`
-- **Retry** middleware for transient errors (429, 5xx)
-- **Fallback** middleware for multi-provider resilience
-- **Edge runtime compatible**
-- **100% TypeScript** with strict types
-
----
-
 ## Examples
 
-See [TetherAI examples](../../../examples) for ready-to-run demos, including a Next.js chat app.
-
----
+See [TetherAI examples](https://github.com/nbursa/TetherAI/tree/main/examples) for ready-to-run demos, including a Next.js chat app.
 
 ## License
 
-MIT
+[MIT](https://github.com/nbursa/TetherAI/blob/main/LICENSE)
