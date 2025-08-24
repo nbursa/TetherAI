@@ -9,6 +9,7 @@
   "scripts": {
     "build": "pnpm --filter @tetherai/provider-openai build",
     "dev:next": "pnpm --filter @tetherai/provider-openai build && pnpm --filter tetherai-nextjs-example dev",
+    "prelint": "pnpm --filter @tetherai/provider-openai build",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write ."
   },

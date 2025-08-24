@@ -32,11 +32,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm run lint
-
       - name: Build packages
         run: pnpm run build
+
+      - name: Lint
+        run: pnpm run lint
 
       - name: Type check examples
         run: pnpm --filter tetherai-nextjs-example exec tsc -p tsconfig.json --noEmit
