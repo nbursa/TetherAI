@@ -19,16 +19,37 @@ Think of it as _“Express for AI providers”_.
    pnpm install @tetherai/openai
    ```
 
-2. Run the Next.js example locally:
+2. Run an example locally:
 
-   ```bash
-   cd examples/nextjs
-   pnpm install
-   export OPENAI_API_KEY=sk-...
-   pnpm dev
-   ```
+      a. **Next.js example:**
 
-3. Open <http://localhost:3000>.
+      ```bash
+      cd examples/nextjs
+      pnpm install
+      export OPENAI_API_KEY=sk-...
+      pnpm dev
+      ```
+
+      b. **Node.js example:**
+
+      ```bash
+      cd examples/node
+      pnpm install
+      export OPENAI_API_KEY=sk-...
+      pnpm dev
+      ```
+
+3. Try it out:
+
+   a. **Next.js:** Open <http://localhost:3000>.
+
+   b. **Node.js:** POST to <http://localhost:8787/chat>:
+
+      ```bash
+      curl -N -X POST http://localhost:8787/chat \
+        -H "Content-Type: application/json" \
+        -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello!"}]}'
+      ```
 
 ## Usage
 
@@ -67,7 +88,7 @@ for await (const chunk of resilientProvider.streamChat(req)) {
 }
 ```
 
-Make sure to set OPENAI_API_KEY in your environment (or .env.local in Next.js).
+Make sure to set OPENAI_API_KEY in your environment.
 
 ## Features
 

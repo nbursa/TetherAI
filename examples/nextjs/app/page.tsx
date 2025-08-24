@@ -8,6 +8,7 @@ async function* readSSE(res: Response) {
   const reader = res.body!.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
@@ -33,6 +34,7 @@ export default function Page() {
 
   const send = useCallback(async () => {
     if (!input.trim()) return;
+
     const user: UIMessage = {
       id: crypto.randomUUID(),
       role: "user",
@@ -43,6 +45,7 @@ export default function Page() {
       role: "assistant",
       content: "",
     };
+
     setMessages((prev) => [...prev, user, asst]);
     setInput("");
     setStreaming(true);
