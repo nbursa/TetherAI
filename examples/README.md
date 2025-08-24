@@ -9,26 +9,36 @@ A minimal chat application built with Next.js 14 App Router and Edge runtime.
 ### Run locally
 
 1. Navigate to the example:
+
    ```bash
    cd examples/nextjs
    ```
+
 2. Install dependencies:
+
    ```bash
    pnpm install
    # or: npm install / yarn install
    ```
+
 3. Set your OpenAI API key in environment:
+
    ```bash
    export OPENAI_API_KEY=sk-...
    ```
+
    Or create `.env.local` file with:
-   ```
+
+   ```text
    OPENAI_API_KEY=sk-...
    ```
+
 4. Start the dev server:
+
    ```bash
    pnpm dev
    ```
+
    Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Features

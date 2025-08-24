@@ -1,0 +1,5 @@
+dist
+node_modules
+.next
+examples/*/node_modules
+examples/*/.next

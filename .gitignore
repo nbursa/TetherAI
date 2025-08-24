@@ -3,3 +3,4 @@ examples/*/node_modules/
 examples/*/.next/
 examples/nextjs/next-env.d.ts
 packages/*/*/dist
+node_modules

@@ -1,69 +1,38 @@
 # TetherAI
 
-TetherAI is a modular TypeScript platform for integrating different AI providers.  
-It focuses on **simplicity**, **streaming-first APIs**, and **composable middleware** such as retry and fallback.  
-Think of it as *“Express for AI providers”*.
-
----
+TetherAI is a modular **TypeScript** platform for integrating different AI providers.  
+It focuses on **simplicity**, **streaming‑first APIs**, and **composable middleware** such as **retry** and **fallback**.  
+Think of it as _“Express for AI providers”_.
 
 ## Structure
 
-- `packages/` – contains AI providers as separate packages.
-- `examples/` – contains demo applications (Next.js, Node.js, etc).
-
----
+- `packages/` – separate provider packages.
+- `examples/` – demo applications (Next.js, Node.js, etc.).
 
 ## Quick Start
 
-Install a provider package (for now, OpenAI):
+1. Install a provider package (**pnpm preferred**; npm or yarn also work):
 
 ```bash
-npm install @tetherai/provider-openai
+pnpm install @tetherai/provider-openai
 ```
 
-Create a client:
+2. Run the Next.js example locally:
 
-```ts
-import { openAI, withRetry, withFallback, type ChatRequest } from "@tetherai/provider-openai";
-
-const provider = withFallback(
-  [
-    withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), { retries: 2 }),
-    // later: other providers like Anthropic, Mistral...
-  ]
-);
-
-async function run() {
-  const req: ChatRequest = {
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: "Hello world" }],
-  };
-
-  for await (const chunk of provider.streamChat(req)) {
-    process.stdout.write(chunk.delta);
-  }
-}
-
-run();
+```bash
+cd examples/nextjs
+pnpm install
+export OPENAI_API_KEY=sk-...
+pnpm dev
 ```
 
----
-
-## Features
-
-- **Streaming-first** – token stream via `AsyncIterable`.
-- **Retry middleware** – automatic retry on transient errors (429, 5xx).
-- **Fallback middleware** – try multiple providers/models in order.
-- **Edge compatible** – works with `fetch`, `ReadableStream`, and modern runtimes.
-- **TypeScript strict** – 100% typed, no `any`.
-
----
+3. Open http://localhost:3000.
 
 ## Usage
 
-TetherAI is designed to make it easy to compose AI provider clients and middleware.
+TetherAI makes it easy to compose AI provider clients and middleware.
 
-### Creating a Provider
+### Create a Provider
 
 ```ts
 import { openAI } from "@tetherai/provider-openai";
@@ -71,23 +40,25 @@ import { openAI } from "@tetherai/provider-openai";
 const provider = openAI({ apiKey: process.env.OPENAI_API_KEY! });
 ```
 
-### Adding Retry and Fallback
+### Add Retry and Fallback
 
 ```ts
 import { withRetry, withFallback } from "@tetherai/provider-openai";
 
 const resilientProvider = withFallback([
   withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), { retries: 2 }),
-  // Add other providers for fallback as needed
+  // later: add other providers here
 ]);
 ```
 
-### Streaming Chat Completion
+### Stream a Chat Completion
 
 ```ts
-const req = {
+import type { ChatRequest } from "@tetherai/provider-openai";
+
+const req: ChatRequest = {
   model: "gpt-4o-mini",
-  messages: [{ role: "user", content: "Tell me a joke." }]
+  messages: [{ role: "user", content: "Tell me a joke." }],
 };
 
 for await (const chunk of resilientProvider.streamChat(req)) {
@@ -95,27 +66,30 @@ for await (const chunk of resilientProvider.streamChat(req)) {
 }
 ```
 
----
+Make sure to set OPENAI_API_KEY in your environment (or .env.local in Next.js).
+
+## Features
+
+ • Streaming‑first – token stream via AsyncIterable
+ • Retry middleware – automatic retry on transient errors (429, 5xx)
+ • Fallback middleware – try multiple providers/models in order
+ • Edge compatible – built on fetch, ReadableStream, modern runtimes
+ • Strict TypeScript – 100% typed, no any
 
 ## Examples
 
-See [examples/](./examples) for ready-to-run demos.
+See examples/ for ready‑to‑run demos:
+ • Next.js Chat – Edge runtime chat UI with streaming and retry/fallback middleware.
 
-- [Next.js Chat](./examples/nextjs) – Edge runtime chat UI with streaming and retry/fallback middleware.
-
-Run locally:
+### Quick run:
 
 ```bash
 cd examples/nextjs
-npm install
+pnpm install
 export OPENAI_API_KEY=sk-...
-npm run dev
+pnpm dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000).
-
----
 
 ## License
 
-MIT
+[MIT](LICENCE)

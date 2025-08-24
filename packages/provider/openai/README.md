@@ -12,7 +12,8 @@ It follows the common `Provider` interface defined by TetherAI and supports midd
 ## Installation
 
 ```bash
-npm install @tetherai/provider-openai
+pnpm install @tetherai/provider-openai
+# or: npm install / yarn install
 ```
 
 ---

@@ -1,8 +1,9 @@
-{
+{ 
   "name": "tetherai-nextjs-example",
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "pnpm --filter @tetherai/provider-openai build",
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
