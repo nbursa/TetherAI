@@ -79,7 +79,7 @@ Make sure to set OPENAI_API_KEY in your environment (or .env.local in Next.js).
 - Edge compatible – built on fetch, ReadableStream, modern runtimes
 - Strict TypeScript – 100% typed, no any
 
-## 📦 Available Providers
+## Available Providers
 
 - [@tetherai/openai](https://www.npmjs.com/package/@tetherai/openai)  
   Streaming-first OpenAI adapter with retry & fallback middleware.
