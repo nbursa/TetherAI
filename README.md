@@ -108,6 +108,13 @@ Make sure to set OPENAI_API_KEY in your environment.
   [![npm version](https://img.shields.io/npm/v/@tetherai/openai.svg)](https://www.npmjs.com/package/@tetherai/openai)
   [![npm downloads](https://img.shields.io/npm/dm/@tetherai/openai.svg)](https://www.npmjs.com/package/@tetherai/openai)
 
+- [@tetherai/anthropic](https://www.npmjs.com/package/@tetherai/anthropic)  
+  Streaming-first OpenAI adapter with retry & fallback middleware.\
+  [README](https://github.com/nbursa/TetherAI/blob/main/packages/provider/anthropic/README.md)
+
+  [![npm version](https://img.shields.io/npm/v/@tetherai/anthropic.svg)](https://www.npmjs.com/package/@tetherai/anthropic)
+  [![npm downloads](https://img.shields.io/npm/dm/@tetherai/anthropic.svg)](https://www.npmjs.com/package/@tetherai/anthropic)
+
 ## Examples
 
 See examples/ for ready‑to‑run demos:
