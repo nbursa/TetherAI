@@ -1,5 +1,5 @@
-import { ChatRequest, ChatStreamChunk, Provider } from "./types";
-import { sseToIterable } from "./utils/sse";
+import { ChatRequest, ChatStreamChunk, Provider } from "../../../core/types";
+import { sseToIterable } from "../../../core/utils/sse";
 
 export class OpenAIError extends Error {
   readonly status: number;

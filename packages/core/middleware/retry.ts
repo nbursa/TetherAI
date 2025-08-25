@@ -1,5 +1,4 @@
 import type { Provider, ChatRequest, ChatStreamChunk } from "../types";
-import { OpenAIError } from "../openai";
 
 export interface RetryOptions {
   retries?: number;
@@ -9,10 +8,28 @@ export interface RetryOptions {
 }
 
 function isTransientError(e: unknown): boolean {
-  if (e instanceof OpenAIError) {
-    return e.status === 429 || e.status >= 500;
+  // using type-guard with optional chaining and type narrowing
+  const status: number | null =
+    (typeof e === "object" &&
+      e !== null &&
+      "status" in e &&
+      typeof (e as { status?: unknown }).status === "number" &&
+      (e as { status: number }).status) ||
+    (typeof e === "object" &&
+      e !== null &&
+      "statusCode" in e &&
+      typeof (e as { statusCode?: unknown }).statusCode === "number" &&
+      (e as { statusCode: number }).statusCode) ||
+    (typeof e === "object" &&
+      e !== null &&
+      "code" in e &&
+      typeof (e as { code?: unknown }).code === "number" &&
+      (e as { code: number }).code) ||
+    null;
+
+  if (typeof status === "number") {
+    return status === 429 || status >= 500;
   }
-  // Network-like errors often have no status; allow retry once
   return true;
 }
 
@@ -41,18 +58,19 @@ export function withRetry(
           for await (const chunk of provider.streamChat(req, signal)) {
             yield chunk;
           }
-          return; // success path
+          return;
         } catch (e) {
           attempt += 1;
           if (attempt > retries || !isTransientError(e) || signal?.aborted) {
             throw e;
           }
+
           const delay = baseMs * Math.pow(factor, attempt - 1);
           const wait = jitter
             ? Math.floor(delay * (0.8 + Math.random() * 0.4))
             : delay;
+
           await sleep(wait);
-          // loop to retry
         }
       }
     },

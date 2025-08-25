@@ -28,5 +28,9 @@
     "**/*.tsx",
     "next.config.mjs"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "baseUrl": ".",
+  "paths": {
+    "@tetherai/openai": ["../../packages/provider/openai/src/index.ts"]
+  }
 }

@@ -5,3 +5,4 @@ examples/nextjs/next-env.d.ts
 packages/*/*/dist
 node_modules
 packages/*/*/*.tgz
+.DS_Store

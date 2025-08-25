@@ -33,10 +33,22 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build packages
-        run: pnpm run build
+        run: pnpm -r --filter "./packages/provider/*" run build
+
+      - name: Verify provider artifacts
+        run: |
+          test -f packages/provider/openai/dist/src/index.js
+          test -f packages/provider/openai/dist/src/index.d.ts
+          test -f packages/provider/anthropic/dist/src/index.js
+          test -f packages/provider/anthropic/dist/src/index.d.ts
 
       - name: Lint
         run: pnpm run lint
 
-      - name: Type check examples
+      - name: Type check Next.js example
         run: pnpm --filter tetherai-nextjs-example exec tsc -p tsconfig.json --noEmit
+
+      - name: Build Next.js example
+        env:
+          OPENAI_API_KEY: "sk-dummy"
+        run: pnpm --filter tetherai-nextjs-example run build

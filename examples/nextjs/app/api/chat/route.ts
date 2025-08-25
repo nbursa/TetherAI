@@ -1,11 +1,5 @@
 import { NextRequest } from "next/server";
-import {
-  openAI,
-  withRetry,
-  type ChatRequest,
-  type ChatStreamChunk,
-  type Provider,
-} from "@tetherai/openai";
+import { openAI, withRetry, type ChatRequest } from "@tetherai/openai";
 
 export const runtime = "edge";
 
@@ -50,8 +44,19 @@ function isChatRequest(x: unknown): x is ChatRequest {
   );
 }
 
-/** SSE helper (typed) */
-function toSSEStream(iterable: AsyncIterable<ChatStreamChunk>) {
+/** Narrow only to "is async iterable" — no provider types here */
+function isAsyncIterable(x: unknown): x is AsyncIterable<unknown> {
+  return (
+    typeof x === "object" &&
+    x !== null &&
+    Symbol.asyncIterator in (x as Record<PropertyKey, unknown>) &&
+    typeof (x as Record<PropertyKey, unknown>)[Symbol.asyncIterator] ===
+      "function"
+  );
+}
+
+/** SSE helper that accepts AsyncIterable<unknown> (strict + no any) */
+function toSSEStream(iterable: AsyncIterable<unknown>) {
   const encoder = new TextEncoder();
   return new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -78,23 +83,18 @@ function toSSEStream(iterable: AsyncIterable<ChatStreamChunk>) {
   });
 }
 
-/** Provider with retry */
-if (
-  typeof openAI !== "function" ||
-  typeof withRetry !== "function" ||
-  typeof process.env.OPENAI_API_KEY !== "string"
-) {
-  throw new Error("Required OpenAI API key or functions are not available.");
-}
-
-const provider: Provider = withRetry(
-  openAI({ apiKey: process.env.OPENAI_API_KEY }),
-  {
-    retries: 2,
-  }
-);
-
 export async function POST(req: NextRequest) {
+  // Read API key at request time (Edge-safe) and initialize provider
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (typeof apiKey !== "string" || apiKey.length === 0) {
+    return new Response(
+      JSON.stringify({ error: "Missing OPENAI_API_KEY server env" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  const provider = withRetry(openAI({ apiKey }), { retries: 2 });
+
   // Parse body as unknown, then safely coerce
   const raw: unknown = await req.json();
 
@@ -109,12 +109,8 @@ export async function POST(req: NextRequest) {
           isChatMessage
         )
       : [];
-    payload = {
-      model,
-      messages,
-    };
+    payload = { model, messages };
   } else {
-    // best-effort fallback: accept minimal {model, messages} if present
     const model =
       typeof (raw as Record<string, unknown>)?.model === "string"
         ? ((raw as Record<string, unknown>).model as string)
@@ -126,10 +122,17 @@ export async function POST(req: NextRequest) {
     payload = { model, messages };
   }
 
-  const stream: AsyncIterable<ChatStreamChunk> = provider.streamChat({
+  const stream = provider.streamChat({
     model: payload.model,
     messages: payload.messages,
   });
+
+  if (!isAsyncIterable(stream)) {
+    return new Response(
+      JSON.stringify({ error: "Internal: invalid chat stream" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
 
   return new Response(toSSEStream(stream), {
     headers: {
