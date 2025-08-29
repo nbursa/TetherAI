@@ -37,7 +37,7 @@ async function copySharedFiles() {
             await mkdir(providerDir, { recursive: true });
 
             for (const file of SHARED_FILES) {
-                if ((provider === 'mistral' || provider === 'grok' || provider === 'local') && file === 'types.ts') {
+                if ((provider === 'mistral' || provider === 'grok' || provider === 'local' || provider === 'anthropic') && file === 'types.ts') {
                     console.log(`Skipping ${file} for ${provider} (has custom types)`);
                     continue;
                 }

@@ -48,6 +48,13 @@ export interface ChatRequest {
   user?: string; // User identifier for moderation
   metadata?: Record<string, unknown>; // Custom metadata
 
+  // Enhanced parameters for better API alignment
+  seed?: number; // OpenAI, Mistral: deterministic responses
+  logprobs?: boolean; // OpenAI: return log probabilities
+  randomSeed?: number; // Mistral: alternative to seed
+  logitBias?: Record<string, number>; // OpenAI, Anthropic: bias specific tokens
+  topK?: number; // Anthropic: top-k sampling
+
   // Extensions
   [key: string]: unknown; // for additional provider-specific fields
 }
