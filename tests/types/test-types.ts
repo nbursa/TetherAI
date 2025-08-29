@@ -5,11 +5,27 @@ export interface MockProvider {
     ...args: unknown[]
   ) => Promise<unknown> | AsyncGenerator<unknown>;
   chat?: (...args: unknown[]) => Promise<unknown>;
+  getModels?: () => Promise<string[]>;
+  validateModel?: (modelId: string) => boolean;
+  getMaxTokens?: (modelId: string) => number;
 }
 
 export interface MockStreamChatArgs {
   model: string;
   messages: Array<{ role: string; content: string }>;
+  // Enhanced chat options
+  temperature?: number;
+  maxTokens?: number;
+  topP?: number;
+  topK?: number;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
+  stop?: string | string[];
+  systemPrompt?: string;
+  responseFormat?: "text" | "json_object";
+  safeMode?: boolean;
+  user?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface MockStreamChunk {
@@ -20,7 +36,14 @@ export interface MockStreamChunk {
 
 export interface MockChatResponse {
   content: string;
-  done: boolean;
+  model: string;
+  usage: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+  finishReason: "stop" | "length" | "content_filter" | "tool_calls";
+  metadata?: Record<string, unknown>;
 }
 
 export interface MockError extends Error {

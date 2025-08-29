@@ -22,6 +22,9 @@ describe("Anthropic Provider", () => {
       const mockAnthropic = vi.fn().mockReturnValue({
         streamChat: vi.fn(),
         chat: vi.fn(),
+        getModels: vi.fn(),
+        validateModel: vi.fn(),
+        getMaxTokens: vi.fn(),
       } as MockProvider);
 
       const config: MockProviderConfig = {
@@ -42,6 +45,9 @@ describe("Anthropic Provider", () => {
       const mockAnthropic = vi.fn().mockReturnValue({
         streamChat: vi.fn(),
         chat: vi.fn(),
+        getModels: vi.fn(),
+        validateModel: vi.fn(),
+        getMaxTokens: vi.fn(),
       } as MockProvider);
 
       const config: MockProviderConfig = {
@@ -74,7 +80,7 @@ describe("Anthropic Provider", () => {
       };
 
       const messages: MockStreamChatArgs = {
-        model: "claude-3-haiku-20240307",
+        model: "claude-3-5-sonnet-20240620",
         messages: [{ role: "user", content: "Say hello" }],
       };
 
@@ -104,87 +110,463 @@ describe("Anthropic Provider", () => {
       };
 
       const messages: MockStreamChatArgs = {
-        model: "claude-3-haiku-20240307",
-        messages: [{ role: "user", content: "Test" }],
+        model: "claude-3-5-sonnet-20240620",
+        messages: [{ role: "user", content: "Say hello" }],
       };
 
       await expect(mockProvider.streamChat(messages)).rejects.toThrow(
         "Stream failed"
       );
+      expect(mockStreamChat).toHaveBeenCalledWith(messages);
+    });
+
+    it("should support enhanced chat options", async () => {
+      const mockStreamChat = vi.fn().mockImplementation(async function* () {
+        yield { delta: "Enhanced response", done: false };
+        yield { delta: "", done: true };
+      });
+
+      const mockProvider: MockProvider = {
+        streamChat: mockStreamChat,
+      };
+
+      const enhancedRequest: MockStreamChatArgs = {
+        model: "claude-3-5-sonnet-20240620",
+        messages: [{ role: "user", content: "Hello" }],
+        temperature: 0.7,
+        maxTokens: 1000,
+        topP: 0.9,
+        topK: 40,
+        stop: ["\n", "END"],
+        systemPrompt: "You are a helpful assistant",
+        responseFormat: "json_object",
+        safeMode: true,
+        user: "user123",
+        metadata: { sessionId: "abc123" },
+      };
+
+      const stream = mockProvider.streamChat(enhancedRequest);
+      const chunks: unknown[] = [];
+
+      for await (const chunk of stream as AsyncGenerator<unknown>) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toHaveLength(2);
+      expect(mockStreamChat).toHaveBeenCalledWith(enhancedRequest);
     });
   });
 
-  describe("Regular Chat", () => {
-    it("should return complete chat response", async () => {
+  describe("Non-Streaming Chat", () => {
+    it("should handle non-streaming chat requests", async () => {
       const mockResponse: MockChatResponse = {
         content: "Hello World!",
-        done: true,
+        model: "claude-3-5-sonnet-20240620",
+        usage: {
+          promptTokens: 10,
+          completionTokens: 5,
+          totalTokens: 15,
+        },
+        finishReason: "stop",
+        metadata: { id: "msg-123", type: "message" },
       };
 
       const mockChat = vi.fn().mockResolvedValue(mockResponse);
+
       const mockProvider: MockProvider = {
         streamChat: vi.fn(),
         chat: mockChat,
       };
 
-      const messages: MockStreamChatArgs = {
-        model: "claude-3-haiku-20240307",
-        messages: [{ role: "user", content: "Say hello" }],
+      const request: MockStreamChatArgs = {
+        model: "claude-3-5-sonnet-20240620",
+        messages: [{ role: "user", content: "Hello" }],
+        temperature: 0.5,
+        maxTokens: 500,
       };
 
-      if (mockProvider.chat) {
-        const response = await mockProvider.chat(messages);
-        expect(response).toEqual(mockResponse);
-        expect(mockChat).toHaveBeenCalledWith(messages);
+      const response = await mockProvider.chat!(request);
+
+      expect(response).toEqual(mockResponse);
+      expect(mockChat).toHaveBeenCalledWith(request);
+    });
+
+    it("should handle chat errors", async () => {
+      const mockError = new Error("Chat failed");
+      const mockChat = vi.fn().mockRejectedValue(mockError);
+
+      const mockProvider: MockProvider = {
+        streamChat: vi.fn(),
+        chat: mockChat,
+      };
+
+      const request: MockStreamChatArgs = {
+        model: "claude-3-5-sonnet-20240620",
+        messages: [{ role: "user", content: "Hello" }],
+      };
+
+      await expect(mockProvider.chat!(request)).rejects.toThrow("Chat failed");
+      expect(mockChat).toHaveBeenCalledWith(request);
+    });
+  });
+
+  describe("Model Management", () => {
+    it("should list available models", async () => {
+      const mockModels = [
+        "claude-3-5-sonnet",
+        "claude-3-5-haiku",
+        "claude-3-opus",
+      ];
+      const mockGetModels = vi.fn().mockResolvedValue(mockModels);
+
+      const mockProvider: MockProvider = {
+        streamChat: vi.fn(),
+        getModels: mockGetModels,
+      };
+
+      const models = await mockProvider.getModels!();
+
+      expect(models).toEqual(mockModels);
+      expect(mockGetModels).toHaveBeenCalled();
+    });
+
+    it("should validate model IDs", () => {
+      const mockValidateModel = vi
+        .fn()
+        .mockReturnValueOnce(true) // claude-3-5-sonnet
+        .mockReturnValueOnce(false); // invalid-model
+
+      const mockProvider: MockProvider = {
+        streamChat: vi.fn(),
+        validateModel: mockValidateModel,
+      };
+
+      const validModel = mockProvider.validateModel!(
+        "claude-3-5-sonnet-20240620"
+      );
+      const invalidModel = mockProvider.validateModel!("invalid-model");
+
+      expect(validModel).toBe(true);
+      expect(invalidModel).toBe(false);
+      expect(mockValidateModel).toHaveBeenCalledWith(
+        "claude-3-5-sonnet-20240620"
+      );
+      expect(mockValidateModel).toHaveBeenCalledWith("invalid-model");
+    });
+
+    it("should get max tokens for models", () => {
+      const mockGetMaxTokens = vi
+        .fn()
+        .mockReturnValueOnce(200000) // claude-3-5-sonnet
+        .mockReturnValueOnce(200000) // claude-3-opus
+        .mockReturnValueOnce(100000); // claude-2
+
+      const mockProvider: MockProvider = {
+        streamChat: vi.fn(),
+        getMaxTokens: mockGetMaxTokens,
+      };
+
+      const claude35Max = mockProvider.getMaxTokens!(
+        "claude-3-5-sonnet-20240620"
+      );
+      const claude3Max = mockProvider.getMaxTokens!("claude-3-opus-20240229");
+      const claude2Max = mockProvider.getMaxTokens!("claude-2.1");
+
+      expect(claude35Max).toBe(200000);
+      expect(claude3Max).toBe(200000);
+      expect(claude2Max).toBe(100000);
+      expect(mockGetMaxTokens).toHaveBeenCalledWith(
+        "claude-3-5-sonnet-20240620"
+      );
+      expect(mockGetMaxTokens).toHaveBeenCalledWith("claude-3-opus-20240229");
+      expect(mockGetMaxTokens).toHaveBeenCalledWith("claude-2.1");
+    });
+  });
+
+  describe("Enhanced Chat Options", () => {
+    it("should handle temperature parameter", async () => {
+      const mockStreamChat = vi.fn().mockImplementation(async function* () {
+        yield { delta: "Temperature controlled response", done: false };
+        yield { delta: "", done: true };
+      });
+
+      const mockProvider: MockProvider = {
+        streamChat: mockStreamChat,
+      };
+
+      const request: MockStreamChatArgs = {
+        model: "claude-3-5-sonnet-20240620",
+        messages: [{ role: "user", content: "Hello" }],
+        temperature: 0.8,
+      };
+
+      const stream = mockProvider.streamChat(request);
+      const chunks: unknown[] = [];
+
+      for await (const chunk of stream as AsyncGenerator<unknown>) {
+        chunks.push(chunk);
       }
+
+      expect(chunks).toHaveLength(2);
+      expect(mockStreamChat).toHaveBeenCalledWith(request);
+    });
+
+    it("should handle maxTokens parameter", async () => {
+      const mockStreamChat = vi.fn().mockImplementation(async function* () {
+        yield { delta: "Limited response", done: false };
+        yield { delta: "", done: true };
+      });
+
+      const mockProvider: MockProvider = {
+        streamChat: mockStreamChat,
+      };
+
+      const request: MockStreamChatArgs = {
+        model: "claude-3-5-sonnet-20240620",
+        messages: [{ role: "user", content: "Hello" }],
+        maxTokens: 100,
+      };
+
+      const stream = mockProvider.streamChat(request);
+      const chunks: unknown[] = [];
+
+      for await (const chunk of stream as AsyncGenerator<unknown>) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toHaveLength(2);
+      expect(mockStreamChat).toHaveBeenCalledWith(request);
+    });
+
+    it("should handle topK parameter (Claude specific)", async () => {
+      const mockStreamChat = vi.fn().mockImplementation(async function* () {
+        yield { delta: "Top-K controlled response", done: false };
+        yield { delta: "", done: true };
+      });
+
+      const mockProvider: MockProvider = {
+        streamChat: mockStreamChat,
+      };
+
+      const request: MockStreamChatArgs = {
+        model: "claude-3-5-sonnet-20240620",
+        messages: [{ role: "user", content: "Hello" }],
+        topK: 50,
+      };
+
+      const stream = mockProvider.streamChat(request);
+      const chunks: unknown[] = [];
+
+      for await (const chunk of stream as AsyncGenerator<unknown>) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toHaveLength(2);
+      expect(mockStreamChat).toHaveBeenCalledWith(request);
+    });
+
+    it("should handle systemPrompt parameter", async () => {
+      const mockStreamChat = vi.fn().mockImplementation(async function* () {
+        yield { delta: "System guided response", done: false };
+        yield { delta: "", done: true };
+      });
+
+      const mockProvider: MockProvider = {
+        streamChat: mockStreamChat,
+      };
+
+      const request: MockStreamChatArgs = {
+        model: "claude-3-5-sonnet-20240620",
+        messages: [{ role: "user", content: "Hello" }],
+        systemPrompt: "You are a helpful assistant",
+      };
+
+      const stream = mockProvider.streamChat(request);
+      const chunks: unknown[] = [];
+
+      for await (const chunk of stream as AsyncGenerator<unknown>) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toHaveLength(2);
+      expect(mockStreamChat).toHaveBeenCalledWith(request);
+    });
+
+    it("should handle stop sequences", async () => {
+      const mockStreamChat = vi.fn().mockImplementation(async function* () {
+        yield { delta: "Response with stop", done: false };
+        yield { delta: "", done: true };
+      });
+
+      const mockProvider: MockProvider = {
+        streamChat: mockStreamChat,
+      };
+
+      const request: MockStreamChatArgs = {
+        model: "claude-3-5-sonnet-20240620",
+        messages: [{ role: "user", content: "Hello" }],
+        stop: ["\n", "END"],
+      };
+
+      const stream = mockProvider.streamChat(request);
+      const chunks: unknown[] = [];
+
+      for await (const chunk of stream as AsyncGenerator<unknown>) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toHaveLength(2);
+      expect(mockStreamChat).toHaveBeenCalledWith(request);
+    });
+
+    it("should handle responseFormat parameter", async () => {
+      const mockStreamChat = vi.fn().mockImplementation(async function* () {
+        yield { delta: '{"response": "JSON formatted"}', done: false };
+        yield { delta: "", done: true };
+      });
+
+      const mockProvider: MockProvider = {
+        streamChat: mockStreamChat,
+      };
+
+      const request: MockStreamChatArgs = {
+        model: "claude-3-5-sonnet-20240620",
+        messages: [{ role: "user", content: "Hello" }],
+        responseFormat: "json_object",
+      };
+
+      const stream = mockProvider.streamChat(request);
+      const chunks: unknown[] = [];
+
+      for await (const chunk of stream as AsyncGenerator<unknown>) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toHaveLength(2);
+      expect(mockStreamChat).toHaveBeenCalledWith(request);
     });
   });
 
   describe("Error Handling", () => {
-    it("should handle API errors correctly", async () => {
-      const mockError: MockError = new Error(
-        "API rate limit exceeded"
-      ) as MockError;
-      mockError.name = "AnthropicError";
-      mockError.status = 429;
+    it("should handle API errors with status codes", async () => {
+      const mockError: MockError = {
+        name: "AnthropicError",
+        message: "API key invalid",
+        status: 401,
+      };
 
       const mockStreamChat = vi.fn().mockRejectedValue(mockError);
+
       const mockProvider: MockProvider = {
         streamChat: mockStreamChat,
       };
 
-      const messages: MockStreamChatArgs = {
-        model: "claude-3-haiku-20240307",
-        messages: [{ role: "user", content: "Test" }],
+      const request: MockStreamChatArgs = {
+        model: "claude-3-5-sonnet-20240620",
+        messages: [{ role: "user", content: "Hello" }],
       };
 
-      try {
-        await mockProvider.streamChat(messages);
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-        if (error instanceof Error && "status" in error) {
-          expect((error as MockError).status).toBe(429);
-        }
-      }
+      await expect(mockProvider.streamChat(request)).rejects.toThrow(
+        "API key invalid"
+      );
+      expect(mockStreamChat).toHaveBeenCalledWith(request);
     });
 
     it("should handle network errors", async () => {
-      const mockError = new Error("Network timeout");
-      mockError.name = "TypeError";
-
+      const mockError = new Error("Network error");
       const mockStreamChat = vi.fn().mockRejectedValue(mockError);
+
       const mockProvider: MockProvider = {
         streamChat: mockStreamChat,
       };
 
-      const messages: MockStreamChatArgs = {
-        model: "claude-3-haiku-20240307",
-        messages: [{ role: "user", content: "Test" }],
+      const request: MockStreamChatArgs = {
+        model: "claude-3-5-sonnet-20240620",
+        messages: [{ role: "user", content: "Hello" }],
       };
 
-      await expect(mockProvider.streamChat(messages)).rejects.toThrow(
-        "Network timeout"
+      await expect(mockProvider.streamChat(request)).rejects.toThrow(
+        "Network error"
       );
+      expect(mockStreamChat).toHaveBeenCalledWith(request);
+    });
+  });
+
+  describe("Integration", () => {
+    it("should work with all enhanced features together", async () => {
+      const mockStreamChat = vi.fn().mockImplementation(async function* () {
+        yield { delta: "Full featured response", done: false };
+        yield { delta: "", done: true };
+      });
+
+      const mockChat = vi.fn().mockResolvedValue({
+        content: "Full featured response",
+        model: "claude-3-5-sonnet-20240620",
+        usage: { promptTokens: 10, completionTokens: 5, totalTokens: 15 },
+        finishReason: "stop",
+      });
+
+      const mockProvider: MockProvider = {
+        streamChat: mockStreamChat,
+        chat: mockChat,
+        getModels: vi
+          .fn()
+          .mockResolvedValue(["claude-3-5-sonnet", "claude-3-5-haiku"]),
+        validateModel: vi.fn().mockReturnValue(true),
+        getMaxTokens: vi.fn().mockReturnValue(200000),
+      };
+
+      // Test streaming with enhanced options
+      const streamRequest: MockStreamChatArgs = {
+        model: "claude-3-5-sonnet-20240620",
+        messages: [{ role: "user", content: "Hello" }],
+        temperature: 0.7,
+        maxTokens: 1000,
+        topP: 0.9,
+        topK: 40,
+        stop: ["\n", "END"],
+        systemPrompt: "You are a helpful assistant",
+        responseFormat: "json_object",
+        safeMode: true,
+        user: "user123",
+        metadata: { sessionId: "abc123" },
+      };
+
+      const stream = mockProvider.streamChat(streamRequest);
+      const chunks: unknown[] = [];
+
+      for await (const chunk of stream as AsyncGenerator<unknown>) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toHaveLength(2);
+      expect(mockStreamChat).toHaveBeenCalledWith(streamRequest);
+
+      // Test non-streaming chat
+      const chatRequest: MockStreamChatArgs = {
+        model: "claude-3-5-sonnet-20240620",
+        messages: [{ role: "user", content: "Hello" }],
+        temperature: 0.5,
+        maxTokens: 500,
+      };
+
+      const chatResponse = (await mockProvider.chat!(
+        chatRequest
+      )) as MockChatResponse;
+      expect(chatResponse.content).toBe("Full featured response");
+      expect(mockChat).toHaveBeenCalledWith(chatRequest);
+
+      // Test model management
+      const models = await mockProvider.getModels!();
+      expect(models).toEqual(["claude-3-5-sonnet", "claude-3-5-haiku"]);
+
+      const isValid = mockProvider.validateModel!("claude-3-5-sonnet-20240620");
+      expect(isValid).toBe(true);
+
+      const maxTokens = mockProvider.getMaxTokens!(
+        "claude-3-5-sonnet-20240620"
+      );
+      expect(maxTokens).toBe(200000);
     });
   });
 

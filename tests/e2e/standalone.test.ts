@@ -26,6 +26,25 @@ describe("Standalone Provider Tests", () => {
         throw error;
       }
     });
+
+    it("should have core functionality", async () => {
+      try {
+        const openaiModule = await import(
+          resolve(projectRoot, "packages/provider/openai/dist/src/index.js")
+        );
+
+        // Check for core functions and error classes
+        expect("openAI" in openaiModule).toBe(true);
+        expect("OpenAIError" in openaiModule).toBe(true);
+        expect("withRetry" in openaiModule).toBe(true);
+        expect("withFallback" in openaiModule).toBe(true);
+
+        console.log("✅ OpenAI provider has core functionality");
+      } catch (error) {
+        console.error("❌ OpenAI core functionality check failed:", error);
+        throw error;
+      }
+    });
   });
 
   describe("Anthropic Provider", () => {
@@ -44,6 +63,25 @@ describe("Standalone Provider Tests", () => {
         console.log("Available exports:", Object.keys(anthropicModule));
       } catch (error) {
         console.error("❌ Anthropic provider import failed:", error);
+        throw error;
+      }
+    });
+
+    it("should have core functionality", async () => {
+      try {
+        const anthropicModule = await import(
+          resolve(projectRoot, "packages/provider/anthropic/dist/src/index.js")
+        );
+
+        // Check for core functions and error classes
+        expect("anthropic" in anthropicModule).toBe(true);
+        expect("AnthropicError" in anthropicModule).toBe(true);
+        expect("withRetry" in anthropicModule).toBe(true);
+        expect("withFallback" in anthropicModule).toBe(true);
+
+        console.log("✅ Anthropic provider has core functionality");
+      } catch (error) {
+        console.error("❌ Anthropic core functionality check failed:", error);
         throw error;
       }
     });
@@ -69,6 +107,35 @@ describe("Standalone Provider Tests", () => {
       expect("withFallback" in anthropicModule).toBe(true);
 
       console.log("✅ Providers are independent!");
+    });
+
+    it("should have consistent core interfaces", async () => {
+      const openaiModule = await import(
+        resolve(projectRoot, "packages/provider/openai/dist/src/index.js")
+      );
+      const anthropicModule = await import(
+        resolve(projectRoot, "packages/provider/anthropic/dist/src/index.js")
+      );
+
+      // Both should have the same core functionality
+      const coreFunctions = ["withRetry", "withFallback"];
+      const openaiCore = ["openAI", "OpenAIError"];
+      const anthropicCore = ["anthropic", "AnthropicError"];
+
+      coreFunctions.forEach((func) => {
+        expect(func in openaiModule).toBe(true);
+        expect(func in anthropicModule).toBe(true);
+      });
+
+      openaiCore.forEach((func) => {
+        expect(func in openaiModule).toBe(true);
+      });
+
+      anthropicCore.forEach((func) => {
+        expect(func in anthropicModule).toBe(true);
+      });
+
+      console.log("✅ Both providers have consistent core interfaces!");
     });
   });
 });
