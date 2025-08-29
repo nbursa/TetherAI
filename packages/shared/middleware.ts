@@ -77,6 +77,22 @@ export function withRetry(
         }
       }
     },
+
+    async chat(req: ChatRequest, signal?: AbortSignal) {
+      return provider.chat(req, signal);
+    },
+
+    async getModels() {
+      return provider.getModels();
+    },
+
+    validateModel(modelId: string) {
+      return provider.validateModel(modelId);
+    },
+
+    getMaxTokens(modelId: string) {
+      return provider.getMaxTokens(modelId);
+    },
   };
 }
 
@@ -112,6 +128,22 @@ export function withFallback(
         }
       }
       throw lastError;
+    },
+
+    async chat(req: ChatRequest, signal?: AbortSignal) {
+      return providers[0].chat(req, signal);
+    },
+
+    async getModels() {
+      return providers[0].getModels();
+    },
+
+    validateModel(modelId: string) {
+      return providers[0].validateModel(modelId);
+    },
+
+    getMaxTokens(modelId: string) {
+      return providers[0].getMaxTokens(modelId);
     },
   };
 }
