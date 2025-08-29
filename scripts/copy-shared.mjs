@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { copyFile, mkdir, readdir } from 'fs/promises';
+import { copyFile, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -19,7 +19,7 @@ const SHARED_FILES = [
 const PROVIDER_PACKAGES = [
     'openai',
     'anthropic',
-    // Add more providers here as you create them
+    // Add more providers here
     // 'grok',
     // 'mistral',
     // 'local'
