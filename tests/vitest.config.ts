@@ -10,7 +10,7 @@ export default defineConfig({
     exclude: ["node_modules/**", "dist/**", "examples/**"],
     coverage: {
       provider: "v8",
-      reporter: ["text", "json", "html"],
+      reporter: ["text", "json", "html", "lcov"],
       exclude: [
         "node_modules/**",
         "dist/**",
@@ -19,6 +19,8 @@ export default defineConfig({
         "**/*.d.ts",
         "**/*.config.*",
       ],
+      all: true,
+      clean: true,
     },
   },
   resolve: {

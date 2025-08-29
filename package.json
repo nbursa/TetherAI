@@ -29,7 +29,6 @@
     "clean": "rm -rf packages/provider/*/dist",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui"
   },
   "devDependencies": {
@@ -41,7 +40,6 @@
     "prettier": "^3.3.3",
     "globals": "^14.0.0",
     "vitest": "^1.0.0",
-    "typescript": "^5.0.0",
-    "@vitest/coverage-v8": "^1.0.0"
+    "typescript": "^5.0.0"
   }
 }

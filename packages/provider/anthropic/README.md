@@ -1,9 +1,8 @@
 # @tetherai/anthropic
 
-[![npm version](https://img.shields.io/badge/npm-v/@tetherai/anthropic-blue.svg)](https://www.npmjs.com/package/@tetherai/anthropic)
+[![npm version](https://img.shields.io/npm/v/@tetherai/anthropic.svg)](https://www.npmjs.com/package/@tetherai/anthropic)
 [![npm downloads](https://img.shields.io/npm/dm/@tetherai/anthropic.svg)](https://www.npmjs.com/package/@tetherai/anthropic)
 [![Build](https://github.com/nbursa/TetherAI/actions/workflows/ci.yml/badge.svg)](https://github.com/nbursa/TetherAI/actions)
-[![codecov](https://codecov.io/gh/nbursa/TetherAI/branch/main/graph/badge.svg)](https://codecov.io/gh/nbursa/TetherAI)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/nbursa/TetherAI/blob/HEAD/LICENSE)
 
 > **Standalone Anthropic provider for TetherAI** - Everything you need in one package!
