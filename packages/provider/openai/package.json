@@ -1,6 +1,6 @@
 {
   "name": "@tetherai/openai",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OpenAI provider for TetherAI (streaming-first + middleware).",
   "license": "MIT",
   "repository": "github:nbursa/TetherAI",
