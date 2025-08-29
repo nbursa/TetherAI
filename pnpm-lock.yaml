@@ -26,6 +26,9 @@ importers:
       prettier:
         specifier: ^3.3.3
         version: 3.6.2
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.2
       typescript-eslint:
         specifier: ^8.7.0
         version: 8.40.0(eslint@9.34.0)(typescript@5.9.2)
@@ -82,17 +85,9 @@ importers:
 
   packages/provider/anthropic: {}
 
-  packages/provider/grok:
-    devDependencies:
-      typescript:
-        specifier: ^5.0.0
-        version: 5.9.2
+  packages/provider/grok: {}
 
-  packages/provider/local:
-    devDependencies:
-      typescript:
-        specifier: ^5.0.0
-        version: 5.9.2
+  packages/provider/local: {}
 
   packages/provider/mistral: {}
 
