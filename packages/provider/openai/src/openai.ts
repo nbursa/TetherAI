@@ -1,20 +1,11 @@
-import { ChatRequest, ChatStreamChunk, Provider } from "../../../core/types";
-import { sseToIterable } from "../../../core/utils/sse";
-
-export class OpenAIError extends Error {
-  readonly status: number;
-  constructor(message: string, status: number) {
-    super(message);
-    this.name = "OpenAIError";
-    this.status = status;
-  }
-}
-
-export interface OpenAIOptions {
-  apiKey: string;
-  baseURL?: string; // defaults to https://api.openai.com/v1
-  fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-}
+import {
+  ChatRequest,
+  ChatStreamChunk,
+  Provider,
+  OpenAIOptions,
+  OpenAIError,
+} from "./types";
+import { sseToIterable } from "./sse";
 
 interface OpenAIErrorBody {
   error?: { message?: string };
@@ -53,53 +44,66 @@ function getDeltaContent(x: unknown): string {
 export function openAI(opts: OpenAIOptions): Provider {
   const baseURL = opts.baseURL ?? "https://api.openai.com/v1";
   const doFetch = opts.fetch ?? fetch;
+  const timeout = opts.timeout ?? 30000;
 
   return {
     async *streamChat(
       req: ChatRequest,
       signal?: AbortSignal
     ): AsyncIterable<ChatStreamChunk> {
-      const res = await doFetch(`${baseURL}/chat/completions`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${opts.apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ ...req, stream: true }),
-        signal,
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-      if (!res.ok) {
-        let message = `OpenAI error: ${res.status}`;
-        try {
-          const raw: unknown = await res.json();
-          if (
-            isOpenAIErrorBody(raw) &&
-            typeof raw.error?.message === "string"
-          ) {
-            message = `OpenAI error ${res.status}: ${raw.error.message}`;
-          }
-        } catch {
-          // ignore parse errors
-        }
-        throw new OpenAIError(message, res.status);
-      }
+      try {
+        const res = await doFetch(`${baseURL}/chat/completions`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${opts.apiKey}`,
+            "Content-Type": "application/json",
+            ...(opts.organization && {
+              "OpenAI-Organization": opts.organization,
+            }),
+          },
+          body: JSON.stringify({ ...req, stream: true }),
+          signal: signal || controller.signal,
+        });
 
-      // Parse SSE stream
-      for await (const data of sseToIterable(res)) {
-        if (data === "[DONE]") {
-          yield { delta: "", done: true };
-          break;
-        }
-        try {
-          const json: unknown = JSON.parse(data);
-          const delta = getDeltaContent(json);
-          if (delta) {
-            yield { delta };
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          let message = `OpenAI error: ${res.status}`;
+          try {
+            const raw: unknown = await res.json();
+            if (
+              isOpenAIErrorBody(raw) &&
+              typeof raw.error?.message === "string"
+            ) {
+              message = `OpenAI error ${res.status}: ${raw.error.message}`;
+            }
+          } catch {
+            // ignore parse errors
           }
-        } catch {
-          // ignore keep-alive or non-JSON lines
+          throw new OpenAIError(message, res.status);
         }
+
+        // Parse SSE stream
+        for await (const data of sseToIterable(res)) {
+          if (data === "[DONE]") {
+            yield { delta: "", done: true };
+            break;
+          }
+          try {
+            const json: unknown = JSON.parse(data);
+            const delta = getDeltaContent(json);
+            if (delta) {
+              yield { delta };
+            }
+          } catch {
+            // ignore keep-alive or non-JSON lines
+          }
+        }
+      } finally {
+        clearTimeout(timeoutId);
       }
     },
   };
