@@ -82,6 +82,20 @@ importers:
 
   packages/provider/anthropic: {}
 
+  packages/provider/grok:
+    devDependencies:
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.2
+
+  packages/provider/local:
+    devDependencies:
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.2
+
+  packages/provider/mistral: {}
+
   packages/provider/openai: {}
 
 packages:
