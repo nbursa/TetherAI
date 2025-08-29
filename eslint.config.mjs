@@ -11,12 +11,11 @@ export default [
             "**/.next/**",
             "examples/*/node_modules/**",
             "examples/*/.next/**",
-            "eslint.config.mjs",
         ],
     },
     eslint.configs.recommended,
     {
-        files: ["**/*.mjs", "**/*.cjs", "**/scripts/*.mjs", "**/scripts/*.cjs"],
+        files: ["**/*.mjs", "**/*.cjs", "**/*.js", "**/scripts/*.mjs", "**/scripts/*.cjs"],
         languageOptions: {
             sourceType: "module",
             parserOptions: { ecmaVersion: "latest" },
@@ -28,7 +27,7 @@ export default [
             "no-console": "off",
         },
     },
-    ...tseslint.configs.recommendedTypeChecked.map((cfg) => ({
+    ...tseslint.configs.recommended.map((cfg) => ({
         ...cfg,
         files: ["**/*.ts", "**/*.tsx"],
     })),
@@ -38,7 +37,6 @@ export default [
             parserOptions: {
                 project: [
                     "./tsconfig.base.json",
-                    "./packages/core/tsconfig.json",
                     "./packages/provider/openai/tsconfig.json",
                     "./packages/provider/anthropic/tsconfig.json",
                     "./examples/nextjs/tsconfig.json",

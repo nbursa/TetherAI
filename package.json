@@ -1,6 +1,10 @@
 {
   "name": "tetherai",
   "private": true,
+  "engines": {
+    "node": ">=18.12.0",
+    "pnpm": ">=9.0.0"
+  },
   "workspaces": [
     "packages/*/*",
     "examples/*"
@@ -8,16 +12,22 @@
   "packageManager": "pnpm@9.0.0",
   "scripts": {
     "prebuild": "node scripts/copy-shared.mjs",
-    "build": "npm run prebuild && npm run build:providers",
-    "build:providers": "npm run prebuild && npm run build:openai && npm run build:anthropic",
-    "build:openai": "cd packages/provider/openai && npm run build",
-    "build:anthropic": "cd packages/provider/anthropic && npm run build",
-    "dev:next": "npm run build && cd examples/nextjs && npm run dev",
-    "prelint": "npm run build",
-    "lint": "eslint . --ext .ts,.tsx",
+    "build": "pnpm run prebuild && pnpm run build:providers",
+    "build:providers": "pnpm run prebuild && pnpm run build:openai && pnpm run build:anthropic",
+    "build:openai": "cd packages/provider/openai && pnpm run build",
+    "build:anthropic": "cd packages/provider/anthropic && pnpm run build",
+    "dev:next": "pnpm run build && cd examples/nextjs && pnpm run dev",
+    "prelint": "pnpm run build",
+    "lint": "pnpm run lint:check",
+    "lint:check": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "format": "prettier --write .",
     "copy-shared": "node scripts/copy-shared.mjs",
-    "clean": "rm -rf packages/provider/*/dist"
+    "clean": "rm -rf packages/provider/*/dist",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
@@ -26,6 +36,7 @@
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.3.3",
-    "globals": "^14.0.0"
+    "globals": "^14.0.0",
+    "vitest": "^1.0.0"
   }
 }
