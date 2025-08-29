@@ -26,10 +26,11 @@ export interface ChatRequest {
   messages: ChatMessage[];
 
   // Core chat parameters
-  temperature?: number; // 0-1, default: 1
+  temperature?: number; // 0-2, default: 1
   maxTokens?: number; // 1-4096, default: unlimited
   topP?: number; // 0-1, default: 1
-  topK?: number; // 0-100, default: 40 (Anthropic specific)
+  frequencyPenalty?: number; // -2.0 to 2.0, default: 0
+  presencePenalty?: number; // -2.0 to 2.0, default: 0
 
   // Stop sequences
   stop?: string | string[]; // Stop generation at these sequences
