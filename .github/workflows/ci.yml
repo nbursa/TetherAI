@@ -45,8 +45,16 @@ jobs:
       - name: Lint
         run: pnpm run lint
 
-      - name: Run tests
-        run: pnpm run test:run
+      - name: Run tests with coverage
+        run: pnpm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
 
       - name: Type check Next.js example
         run: pnpm --filter tetherai-nextjs-example exec tsc -p tsconfig.json --noEmit

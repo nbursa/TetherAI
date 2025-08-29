@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Build](https://github.com/nbursa/TetherAI/actions/workflows/ci.yml/badge.svg)](https://github.com/nbursa/TetherAI/actions)
+[![codecov](https://codecov.io/gh/nbursa/TetherAI/branch/main/graph/badge.svg)](https://codecov.io/gh/nbursa/TetherAI)
 
 TetherAI is a **standalone-first** TypeScript platform for integrating different AI providers.  
 Each package is **completely self-contained** with no external dependencies - includes all types, utilities, and middleware built-in.  

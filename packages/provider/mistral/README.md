@@ -3,6 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/@tetherai/mistral.svg)](https://www.npmjs.com/package/@tetherai/mistral)
 [![npm downloads](https://img.shields.io/npm/dm/@tetherai/mistral.svg)](https://www.npmjs.com/package/@tetherai/mistral)
 [![Build](https://github.com/nbursa/TetherAI/actions/workflows/ci.yml/badge.svg)](https://github.com/nbursa/TetherAI/actions)
+[![codecov](https://codecov.io/gh/nbursa/TetherAI/branch/main/graph/badge.svg)](https://codecov.io/gh/nbursa/TetherAI)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/nbursa/TetherAI/blob/HEAD/LICENSE)
 
 > **Standalone Mistral provider for TetherAI** - Everything you need in one package!
