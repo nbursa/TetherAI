@@ -1,26 +1,25 @@
 import { describe, it, expect } from "vitest";
+import { resolve } from "path";
 import { fileURLToPath } from "url";
-import { resolve, dirname } from "path";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const projectRoot = resolve(__dirname, "../..");
 
-describe("Standalone Provider Tests", () => {
+describe("Standalone Provider Packages", () => {
   describe("OpenAI Provider", () => {
     it("should import successfully", async () => {
       try {
-        const openaiModule = await import(
+        const openAIModule = await import(
           resolve(projectRoot, "packages/provider/openai/dist/src/index.js")
         );
 
-        expect(openaiModule).toBeDefined();
-        expect(typeof openaiModule.openAI).toBe("function");
-        expect(typeof openaiModule.withRetry).toBe("function");
-        expect(typeof openaiModule.withFallback).toBe("function");
+        expect(openAIModule).toBeDefined();
+        expect(typeof openAIModule.openAI).toBe("function");
+        expect(typeof openAIModule.withRetry).toBe("function");
+        expect(typeof openAIModule.withFallback).toBe("function");
 
         console.log("✅ OpenAI provider imported successfully");
-        console.log("Available exports:", Object.keys(openaiModule));
+        console.log("Available exports:", Object.keys(openAIModule));
       } catch (error) {
         console.error("❌ OpenAI provider import failed:", error);
         throw error;
@@ -29,15 +28,15 @@ describe("Standalone Provider Tests", () => {
 
     it("should have core functionality", async () => {
       try {
-        const openaiModule = await import(
+        const openAIModule = await import(
           resolve(projectRoot, "packages/provider/openai/dist/src/index.js")
         );
 
         // Check for core functions and error classes
-        expect("openAI" in openaiModule).toBe(true);
-        expect("OpenAIError" in openaiModule).toBe(true);
-        expect("withRetry" in openaiModule).toBe(true);
-        expect("withFallback" in openaiModule).toBe(true);
+        expect("openAI" in openAIModule).toBe(true);
+        expect("OpenAIError" in openAIModule).toBe(true);
+        expect("withRetry" in openAIModule).toBe(true);
+        expect("withFallback" in openAIModule).toBe(true);
 
         console.log("✅ OpenAI provider has core functionality");
       } catch (error) {
@@ -117,7 +116,7 @@ describe("Standalone Provider Tests", () => {
         expect("mistral" in mistralModule).toBe(true);
         expect("MistralError" in mistralModule).toBe(true);
         expect("withRetry" in mistralModule).toBe(true);
-        expect("withRetry" in mistralModule).toBe(true);
+        expect("withFallback" in mistralModule).toBe(true);
 
         console.log("✅ Mistral provider has core functionality");
       } catch (error) {
@@ -127,61 +126,83 @@ describe("Standalone Provider Tests", () => {
     });
   });
 
-  describe("Provider Independence", () => {
-    it("should have independent types and functions", async () => {
-      const openaiModule = await import(
-        resolve(projectRoot, "packages/provider/openai/dist/src/index.js")
-      );
-      const anthropicModule = await import(
-        resolve(projectRoot, "packages/provider/anthropic/dist/src/index.js")
-      );
-      const mistralModule = await import(
-        resolve(projectRoot, "packages/provider/mistral/dist/src/index.js")
-      );
+  describe("Grok Provider", () => {
+    it("should import successfully", async () => {
+      try {
+        const grokModule = await import(
+          resolve(projectRoot, "packages/provider/grok/dist/src/index.js")
+        );
 
-      // Check that they have their own functions
-      expect("openAI" in openaiModule).toBe(true);
-      expect("anthropic" in anthropicModule).toBe(true);
-      expect("mistral" in mistralModule).toBe(true);
+        expect(grokModule).toBeDefined();
+        expect(typeof grokModule.grok).toBe("function");
+        expect(typeof grokModule.withRetry).toBe("function");
+        expect(typeof grokModule.withFallback).toBe("function");
 
-      // Check that they have shared middleware
-      expect("withRetry" in openaiModule).toBe(true);
-      expect("withFallback" in openaiModule).toBe(true);
-      expect("withRetry" in anthropicModule).toBe(true);
-      expect("withFallback" in anthropicModule).toBe(true);
-      expect("withRetry" in mistralModule).toBe(true);
-      expect("withFallback" in mistralModule).toBe(true);
-
-      console.log("✅ Providers are independent!");
+        console.log("✅ Grok provider imported successfully");
+        console.log("Available exports:", Object.keys(grokModule));
+      } catch (error) {
+        console.error("❌ Grok provider import failed:", error);
+        throw error;
+      }
     });
 
-    it("should have consistent core interfaces", async () => {
-      const openaiModule = await import(
-        resolve(projectRoot, "packages/provider/openai/dist/src/index.js")
-      );
-      const anthropicModule = await import(
-        resolve(projectRoot, "packages/provider/anthropic/dist/src/index.js")
-      );
+    it("should have core functionality", async () => {
+      try {
+        const grokModule = await import(
+          resolve(projectRoot, "packages/provider/grok/dist/src/index.js")
+        );
 
-      // Both should have the same core functionality
-      const coreFunctions = ["withRetry", "withFallback"];
-      const openaiCore = ["openAI", "OpenAIError"];
-      const anthropicCore = ["anthropic", "AnthropicError"];
+        // Check for core functions and error classes
+        expect("grok" in grokModule).toBe(true);
+        expect("GrokError" in grokModule).toBe(true);
+        expect("withRetry" in grokModule).toBe(true);
+        expect("withFallback" in grokModule).toBe(true);
 
-      coreFunctions.forEach((func) => {
-        expect(func in openaiModule).toBe(true);
-        expect(func in anthropicModule).toBe(true);
-      });
+        console.log("✅ Grok provider has core functionality");
+      } catch (error) {
+        console.error("❌ Grok core functionality check failed:", error);
+        throw error;
+      }
+    });
+  });
 
-      openaiCore.forEach((func) => {
-        expect(func in openaiModule).toBe(true);
-      });
+  describe("Local LLM Provider", () => {
+    it("should import successfully", async () => {
+      try {
+        const localLLMModule = await import(
+          resolve(projectRoot, "packages/provider/local/dist/src/index.js")
+        );
 
-      anthropicCore.forEach((func) => {
-        expect(func in anthropicModule).toBe(true);
-      });
+        expect(localLLMModule).toBeDefined();
+        expect(typeof localLLMModule.localLLM).toBe("function");
+        expect(typeof localLLMModule.withRetry).toBe("function");
+        expect(typeof localLLMModule.withFallback).toBe("function");
 
-      console.log("✅ Both providers have consistent core interfaces!");
+        console.log("✅ Local LLM provider imported successfully");
+        console.log("Available exports:", Object.keys(localLLMModule));
+      } catch (error) {
+        console.error("❌ Local LLM provider import failed:", error);
+        throw error;
+      }
+    });
+
+    it("should have core functionality", async () => {
+      try {
+        const localLLMModule = await import(
+          resolve(projectRoot, "packages/provider/local/dist/src/index.js")
+        );
+
+        // Check for core functions and error classes
+        expect("localLLM" in localLLMModule).toBe(true);
+        expect("LocalLLMError" in localLLMModule).toBe(true);
+        expect("withRetry" in localLLMModule).toBe(true);
+        expect("withFallback" in localLLMModule).toBe(true);
+
+        console.log("✅ Local LLM provider has core functionality");
+      } catch (error) {
+        console.error("❌ Local LLM core functionality check failed:", error);
+        throw error;
+      }
     });
   });
 });
