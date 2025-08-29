@@ -1,6 +1,6 @@
 {
   "name": "@tetherai/mistral",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Mistral AI provider for TetherAI (streaming-first + middleware).",
   "license": "MIT",
   "repository": "github:nbursa/TetherAI",
@@ -19,6 +19,17 @@
     "LICENSE"
   ],
   "sideEffects": false,
+  "keywords": [
+    "ai",
+    "mistral",
+    "chat",
+    "streaming",
+    "tetherai"
+  ],
+  "author": "TetherAI Team",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json && node scripts/dist.mjs",
     "prepublishOnly": "pnpm run build"

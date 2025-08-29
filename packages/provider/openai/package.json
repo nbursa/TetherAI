@@ -1,6 +1,6 @@
 {
   "name": "@tetherai/openai",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "OpenAI provider for TetherAI (streaming-first + middleware).",
   "license": "MIT",
   "repository": "github:nbursa/TetherAI",
@@ -19,6 +19,18 @@
     "LICENSE"
   ],
   "sideEffects": false,
+  "keywords": [
+    "ai",
+    "openai",
+    "gpt",
+    "chat",
+    "streaming",
+    "tetherai"
+  ],
+  "author": "TetherAI Team",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json && node scripts/dist.mjs",
     "prepublishOnly": "pnpm run build"

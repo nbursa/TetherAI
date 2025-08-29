@@ -1,7 +1,10 @@
 {
   "name": "@tetherai/local",
-  "version": "0.1.0",
-  "description": "Local LLM provider for TetherAI (Ollama, LM Studio, etc.)",
+  "version": "0.2.0",
+  "description": "Local LLM provider for TetherAI (streaming-first + middleware).",
+  "license": "MIT",
+  "repository": "github:nbursa/TetherAI",
+  "type": "module",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "exports": {
@@ -11,12 +14,11 @@
     }
   },
   "files": [
-    "dist/**/*"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
-  "scripts": {
-    "build": "tsc -p tsconfig.json && node scripts/dist.mjs",
-    "dev": "tsc -p tsconfig.json --watch"
-  },
+  "sideEffects": false,
   "keywords": [
     "ai",
     "local",
@@ -28,13 +30,11 @@
     "tetherai"
   ],
   "author": "TetherAI Team",
-  "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "peerDependencies": {},
   "engines": {
     "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/dist.mjs",
+    "prepublishOnly": "pnpm run build"
   }
 }
