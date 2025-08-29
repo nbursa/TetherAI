@@ -2,6 +2,7 @@ import {
   Provider,
   ChatRequest,
   ChatStreamChunk,
+  ChatResponse,
   AnthropicOptions,
   AnthropicError,
 } from "./types";
@@ -28,6 +29,12 @@ function toAnthropicPayload(req: ChatRequest) {
     role: "user" | "assistant";
     content: Array<{ type: "text"; text: string }>;
   }> = [];
+
+  // Handle system prompt if provided
+  if (req.systemPrompt) {
+    system.push(req.systemPrompt);
+  }
+
   for (const m of req.messages ?? []) {
     if (m.role === "system") system.push(m.content);
     if (m.role === "user" || m.role === "assistant") {
@@ -37,13 +44,23 @@ function toAnthropicPayload(req: ChatRequest) {
       });
     }
   }
-  return {
+
+  const payload: Record<string, unknown> = {
     system: system.length ? system.join("\n") : undefined,
     messages,
     model: req.model,
-    max_tokens: 1024,
     stream: true as const,
   };
+
+  // Add enhanced chat options
+  if (req.temperature !== undefined) payload.temperature = req.temperature;
+  if (req.maxTokens !== undefined) payload.max_tokens = req.maxTokens;
+  if (req.topP !== undefined) payload.top_p = req.topP;
+  if (req.topK !== undefined) payload.top_k = req.topK;
+  if (req.stop !== undefined) payload.stop_sequences = req.stop;
+  if (req.user !== undefined) payload.user = req.user;
+
+  return payload;
 }
 
 function parseStatus(err: unknown): number {
@@ -136,6 +153,122 @@ export function anthropic(opts: AnthropicOptions): Provider {
       } finally {
         clearTimeout(timeoutId);
       }
+    },
+
+    // Non-streaming chat
+    async chat(req: ChatRequest, signal?: AbortSignal): Promise<ChatResponse> {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      try {
+        // Prepare request body (similar to streamChat but without stream: true)
+        const payload = toAnthropicPayload(req);
+        payload.stream = false;
+
+        const res = await doFetch(`${baseURL}/messages`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-api-key": opts.apiKey,
+            "anthropic-version": apiVersion,
+          },
+          body: JSON.stringify(payload),
+          signal: signal || controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          let msg = `Anthropic error: ${res.status}`;
+          try {
+            const raw: unknown = await res.json();
+            if (
+              typeof raw === "object" &&
+              raw !== null &&
+              "error" in raw &&
+              typeof (raw as { error?: unknown }).error === "object" &&
+              typeof (raw as { error: { message?: unknown } }).error
+                ?.message === "string"
+            ) {
+              msg = `Anthropic error ${res.status}: ${(raw as { error: { message: string } }).error.message}`;
+            }
+          } catch {
+            /* ignore */
+          }
+          throw new AnthropicError(msg, res.status);
+        }
+
+        const data = await res.json();
+        const content = data.content?.[0]?.text || "";
+
+        return {
+          content,
+          model: data.model || req.model,
+          usage: data.usage || {
+            promptTokens: 0,
+            completionTokens: 0,
+            totalTokens: 0,
+          },
+          finishReason: data.stop_reason || "stop",
+          metadata: { id: data.id, type: data.type },
+        };
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    },
+
+    // Get available models
+    async getModels(): Promise<string[]> {
+      try {
+        const res = await doFetch(`${baseURL}/models`, {
+          headers: {
+            "x-api-key": opts.apiKey,
+            "anthropic-version": apiVersion,
+          },
+          signal: AbortSignal.timeout(timeout),
+        });
+
+        if (!res.ok) {
+          throw new AnthropicError(
+            `Failed to fetch models: ${res.status}`,
+            res.status
+          );
+        }
+
+        const data = await res.json();
+        return data.data?.map((model: { id: string }) => model.id) || [];
+      } catch (error) {
+        if (error instanceof AnthropicError) throw error;
+        throw new AnthropicError(`Failed to fetch models: ${error}`, 500);
+      }
+    },
+
+    // Validate model ID
+    validateModel(modelId: string): boolean {
+      const validModels = [
+        "claude-3-5-sonnet",
+        "claude-3-5-haiku",
+        "claude-3-opus",
+        "claude-3-sonnet",
+        "claude-3-haiku",
+        "claude-2.1",
+        "claude-2.0",
+        "claude-instant-1.2",
+        "claude-instant-1.1",
+      ];
+      return validModels.some((model) => modelId.startsWith(model));
+    },
+
+    // Get max tokens for model
+    getMaxTokens(modelId: string): number {
+      if (modelId.startsWith("claude-3-5-sonnet")) return 200000;
+      if (modelId.startsWith("claude-3-5-haiku")) return 200000;
+      if (modelId.startsWith("claude-3-opus")) return 200000;
+      if (modelId.startsWith("claude-3-sonnet")) return 200000;
+      if (modelId.startsWith("claude-3-haiku")) return 200000;
+      if (modelId.startsWith("claude-2")) return 100000;
+      if (modelId.startsWith("claude-instant")) return 100000;
+      return 100000; // default
     },
   };
 }
