@@ -1,6 +1,6 @@
 {
   "name": "@tetherai/anthropic",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Anthropic provider for TetherAI (streaming-first + middleware).",
   "license": "MIT",
   "repository": "github:nbursa/TetherAI",
