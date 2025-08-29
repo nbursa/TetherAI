@@ -24,7 +24,7 @@ async function main() {
             try {
                 await copyFile(source, dest);
                 console.log(`Copied ${file}`);
-            } catch (error) {
+            } catch {
                 console.log(`Skipped ${file} (may not exist yet)`);
             }
         }
