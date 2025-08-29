@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { openAI } from "../../packages/provider/openai/dist/src/index";
 import { anthropic } from "../../packages/provider/anthropic/dist/src/index";
 import { mistral } from "../../packages/provider/mistral/dist/src/index";
+import { grok } from "../../packages/provider/grok/dist/src/index";
+import { localLLM } from "../../packages/provider/local/dist/src/index";
 
 // Mock fetch to return realistic API responses
 const mockFetch = vi.fn();
@@ -251,6 +253,190 @@ describe("Real API Response Parsing Tests", () => {
       expect(chunks[0]).toEqual({ delta: "Hello" });
       expect(chunks[1]).toEqual({ delta: " World" });
       expect(chunks[2]).toEqual({ delta: "", done: true });
+    });
+  });
+
+  describe("Grok Provider", () => {
+    it("should parse real Grok streaming responses correctly", async () => {
+      const mockGrokStreamResponse = new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(
+              new TextEncoder().encode(
+                'data: {"id":"grok-123","choices":[{"delta":{"content":"Hello"}}]}\n\n' +
+                  'data: {"id":"grok-123","choices":[{"delta":{"content":" World"}}]}\n\n' +
+                  "data: [DONE]\n"
+              )
+            );
+            controller.close();
+          },
+        })
+      );
+
+      global.fetch = vi.fn().mockResolvedValue(mockGrokStreamResponse);
+
+      const provider = grok({ apiKey: "test-grok-key" });
+      const request = {
+        model: "grok-beta",
+        messages: [{ role: "user" as const, content: "Hello" }],
+      };
+
+      const chunks: unknown[] = [];
+      for await (const chunk of provider.streamChat(request)) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toHaveLength(3);
+      expect(chunks[0]).toEqual({ delta: "Hello" });
+      expect(chunks[1]).toEqual({ delta: " World" });
+      expect(chunks[2]).toEqual({ delta: "", done: true });
+    });
+
+    it("should parse real Grok non-streaming responses correctly", async () => {
+      const mockGrokResponse = {
+        id: "grok-123",
+        choices: [{ message: { content: "Hello World" } }],
+        model: "grok-beta",
+        usage: {
+          prompt_tokens: 10,
+          completion_tokens: 5,
+          total_tokens: 15,
+        },
+        created: 1234567890,
+      };
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockGrokResponse),
+      });
+
+      const provider = grok({ apiKey: "test-grok-key" });
+      const request = {
+        model: "grok-beta",
+        messages: [{ role: "user" as const, content: "Hello" }],
+      };
+
+      const response = await provider.chat(request);
+      expect(response.content).toBe("Hello World");
+      expect(response.model).toBe("grok-beta");
+      expect(response.usage.promptTokens).toBe(10);
+      expect(response.usage.completionTokens).toBe(5);
+      expect(response.usage.totalTokens).toBe(15);
+    });
+
+    it("should handle real Grok error responses correctly", async () => {
+      const mockGrokError = {
+        error: {
+          message: "Invalid API key",
+          type: "invalid_request_error",
+        },
+      };
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: () => Promise.resolve(mockGrokError),
+      });
+
+      const provider = grok({ apiKey: "invalid-key" });
+      const request = {
+        model: "grok-beta",
+        messages: [{ role: "user" as const, content: "Hello" }],
+      };
+
+      await expect(provider.chat(request)).rejects.toThrow("Invalid API key");
+    });
+  });
+
+  describe("Local LLM Provider", () => {
+    it("should parse real Local LLM streaming responses correctly", async () => {
+      const mockLocalStreamResponse = new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(
+              new TextEncoder().encode(
+                'data: {"id":"local-123","choices":[{"delta":{"content":"Hello"}}]}\n\n' +
+                  'data: {"id":"local-123","choices":[{"delta":{"content":" from Local"}}]}\n\n' +
+                  "data: [DONE]\n"
+              )
+            );
+            controller.close();
+          },
+        })
+      );
+
+      global.fetch = vi.fn().mockResolvedValue(mockLocalStreamResponse);
+
+      const provider = localLLM({ baseURL: "http://localhost:11434" });
+      const request = {
+        model: "llama2:7b",
+        messages: [{ role: "user" as const, content: "Hello" }],
+      };
+
+      const chunks: unknown[] = [];
+      for await (const chunk of provider.streamChat(request)) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toHaveLength(3);
+      expect(chunks[0]).toEqual({ delta: "Hello" });
+      expect(chunks[1]).toEqual({ delta: " from Local" });
+      expect(chunks[2]).toEqual({ delta: "", done: true });
+    });
+
+    it("should parse real Local LLM non-streaming responses correctly", async () => {
+      const mockLocalResponse = {
+        id: "local-123",
+        choices: [{ message: { content: "Hello from Local LLM" } }],
+        model: "llama2:7b",
+        usage: {
+          prompt_tokens: 15,
+          completion_tokens: 8,
+          total_tokens: 23,
+        },
+        created: 1234567890,
+      };
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockLocalResponse),
+      });
+
+      const provider = localLLM({ baseURL: "http://localhost:11434" });
+      const request = {
+        model: "llama2:7b",
+        messages: [{ role: "user" as const, content: "Hello" }],
+      };
+
+      const response = await provider.chat(request);
+      expect(response.content).toBe("Hello from Local LLM");
+      expect(response.model).toBe("llama2:7b");
+      expect(response.usage.promptTokens).toBe(15);
+      expect(response.usage.completionTokens).toBe(8);
+      expect(response.usage.totalTokens).toBe(23);
+    });
+
+    it("should handle real Local LLM error responses correctly", async () => {
+      const mockLocalError = {
+        error: {
+          message: "Model not found",
+          type: "not_found",
+        },
+      };
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve(mockLocalError),
+      });
+
+      const provider = localLLM({ baseURL: "http://localhost:11434" });
+      const request = {
+        model: "nonexistent-model",
+        messages: [{ role: "user" as const, content: "Hello" }],
+      };
+
+      await expect(provider.chat(request)).rejects.toThrow("Model not found");
     });
   });
 });
