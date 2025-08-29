@@ -1,25 +1,11 @@
-import type {
+import {
   Provider,
   ChatRequest,
   ChatStreamChunk,
-} from "../../../core/types";
-import { sseToIterable } from "../../../core/utils/sse";
-
-export class AnthropicError extends Error {
-  readonly status: number;
-  constructor(message: string, status: number) {
-    super(message);
-    this.name = "AnthropicError";
-    this.status = status;
-  }
-}
-
-export interface AnthropicOptions {
-  apiKey: string;
-  baseURL?: string; // default: https://api.anthropic.com/v1
-  apiVersion?: string; // default: 2023-06-01
-  fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-}
+  AnthropicOptions,
+  AnthropicError,
+} from "./types";
+import { sseToIterable } from "./sse";
 
 function isString(x: unknown): x is string {
   return typeof x === "string";
@@ -84,61 +70,71 @@ export function anthropic(opts: AnthropicOptions): Provider {
   const baseURL = opts.baseURL ?? "https://api.anthropic.com/v1";
   const apiVersion = opts.apiVersion ?? "2023-06-01";
   const doFetch = opts.fetch ?? fetch;
+  const timeout = opts.timeout ?? 30000;
 
   return {
     async *streamChat(
       req: ChatRequest,
       signal?: AbortSignal
     ): AsyncIterable<ChatStreamChunk> {
-      const res = await doFetch(`${baseURL}/messages`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "x-api-key": opts.apiKey,
-          "anthropic-version": apiVersion,
-        },
-        body: JSON.stringify(toAnthropicPayload(req)),
-        signal,
-      });
-
-      if (!res.ok) {
-        let msg = `Anthropic error: ${res.status}`;
-        try {
-          const raw: unknown = await res.json();
-          if (
-            typeof raw === "object" &&
-            raw !== null &&
-            "error" in raw &&
-            typeof (raw as { error?: unknown }).error === "object" &&
-            typeof (raw as { error: { message?: unknown } }).error?.message ===
-              "string"
-          ) {
-            msg = `Anthropic error ${res.status}: ${(raw as { error: { message: string } }).error.message}`;
-          }
-        } catch {
-          /* ignore */
-        }
-        throw new AnthropicError(msg, res.status);
-      }
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       try {
-        for await (const data of sseToIterable(res)) {
-          let ev: unknown;
+        const res = await doFetch(`${baseURL}/messages`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-api-key": opts.apiKey,
+            "anthropic-version": apiVersion,
+          },
+          body: JSON.stringify(toAnthropicPayload(req)),
+          signal: signal || controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          let msg = `Anthropic error: ${res.status}`;
           try {
-            ev = JSON.parse(data);
+            const raw: unknown = await res.json();
+            if (
+              typeof raw === "object" &&
+              raw !== null &&
+              "error" in raw &&
+              typeof (raw as { error?: unknown }).error === "object" &&
+              typeof (raw as { error: { message?: unknown } }).error
+                ?.message === "string"
+            ) {
+              msg = `Anthropic error ${res.status}: ${(raw as { error: { message: string } }).error.message}`;
+            }
           } catch {
-            continue;
+            /* ignore */
           }
-          if (isTextDeltaEvent(ev)) {
-            yield { delta: (ev as { delta: { text: string } }).delta.text };
-          }
+          throw new AnthropicError(msg, res.status);
         }
-        yield { delta: "", done: true };
-      } catch (err) {
-        const status = parseStatus(err);
-        const message =
-          err instanceof Error ? err.message : "Anthropic streaming error";
-        throw new AnthropicError(message, status);
+
+        try {
+          for await (const data of sseToIterable(res)) {
+            let ev: unknown;
+            try {
+              ev = JSON.parse(data);
+              if (isTextDeltaEvent(ev)) {
+                yield { delta: (ev as { delta: { text: string } }).delta.text };
+              }
+            } catch {
+              continue;
+            }
+          }
+          yield { delta: "", done: true };
+        } catch (err) {
+          const status = parseStatus(err);
+          const message =
+            err instanceof Error ? err.message : "Anthropic streaming error";
+          throw new AnthropicError(message, status);
+        }
+      } finally {
+        clearTimeout(timeoutId);
       }
     },
   };

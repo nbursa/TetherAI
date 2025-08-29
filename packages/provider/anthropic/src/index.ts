@@ -1,4 +1,9 @@
-export * from "../../../core/types";
-export { withRetry } from "../../../core/middleware/retry";
-export { withFallback } from "../../../core/middleware/fallback";
-export { anthropic, type AnthropicOptions, AnthropicError } from "./anthropic";
+// Export all types and functions
+export * from "./types";
+export * from "./sse";
+export * from "./anthropic";
+export * from "./middleware";
+
+// Re-export the main functions for convenience
+export { anthropic } from "./anthropic";
+export { withRetry, withFallback } from "./middleware";
