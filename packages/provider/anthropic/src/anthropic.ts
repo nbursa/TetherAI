@@ -204,11 +204,19 @@ export function anthropic(opts: AnthropicOptions): Provider {
         return {
           content,
           model: data.model || req.model,
-          usage: data.usage || {
-            promptTokens: 0,
-            completionTokens: 0,
-            totalTokens: 0,
-          },
+          usage: data.usage
+            ? {
+                promptTokens: data.usage.input_tokens || 0,
+                completionTokens: data.usage.output_tokens || 0,
+                totalTokens:
+                  (data.usage.input_tokens || 0) +
+                  (data.usage.output_tokens || 0),
+              }
+            : {
+                promptTokens: 0,
+                completionTokens: 0,
+                totalTokens: 0,
+              },
           finishReason: data.stop_reason || "stop",
           metadata: { id: data.id, type: data.type },
         };
