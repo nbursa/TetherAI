@@ -15,7 +15,7 @@ Think of it as _"Express for AI providers" with everything included_.
 - **Rich Error Handling**: Provider-specific error classes with HTTP status codes
 - **Edge Runtime**: Works everywhere from Node.js to Cloudflare Workers
 - **SSE Utilities**: Built-in Server-Sent Events parsing
-- **Multiple Providers**: OpenAI, Anthropic, and Mistral AI support
+- **Multiple Providers**: OpenAI, Anthropic, Mistral AI, Grok AI, and Local LLM support
 
 ## Architecture
 
@@ -23,6 +23,8 @@ Think of it as _"Express for AI providers" with everything included_.
   - `@tetherai/openai` – OpenAI provider
   - `@tetherai/anthropic` – Anthropic provider  
   - `@tetherai/mistral` – Mistral AI provider
+  - `@tetherai/grok` – Grok AI (xAI) provider
+  - `@tetherai/local` – Local LLM provider (Ollama, LM Studio, etc.)
 - `packages/shared/` – internal development tooling (not published)
 - `examples/` – demo applications (Next.js, Node.js, etc.)
 
@@ -36,6 +38,10 @@ Think of it as _"Express for AI providers" with everything included_.
    npm install @tetherai/anthropic
    # or
    npm install @tetherai/mistral
+   # or
+   npm install @tetherai/grok
+   # or
+   npm install @tetherai/local
    ```
 
 2. **Run an example locally**:
@@ -141,7 +147,7 @@ for await (const chunk of resilientProvider.streamChat(req)) {
 
 ### [@tetherai/openai](https://www.npmjs.com/package/@tetherai/openai)
 
-**Standalone OpenAI provider** - Everything you need in one package! 🚀
+**Standalone OpenAI provider** - Everything you need in one package!
 
 - **Zero Dependencies**: Everything included, no external packages needed
 - **Production Ready**: Built-in retry, fallback, and error handling
@@ -155,7 +161,7 @@ for await (const chunk of resilientProvider.streamChat(req)) {
 
 ### [@tetherai/anthropic](https://www.npmjs.com/package/@tetherai/anthropic)
 
-**Standalone Anthropic provider** - Everything you need in one package! 🚀
+**Standalone Anthropic provider** - Everything you need in one package!
 
 - **Zero Dependencies**: Everything included, no external packages needed
 - **Production Ready**: Built-in retry, fallback, and error handling
@@ -166,6 +172,50 @@ for await (const chunk of resilientProvider.streamChat(req)) {
 [![npm downloads](https://img.shields.io/npm/dm/@tetherai/anthropic.svg)](https://www.npmjs.com/package/@tetherai/anthropic)
 
 [Full README](https://github.com/nbursa/TetherAI/blob/main/packages/provider/anthropic/README.md)
+
+### [@tetherai/mistral](https://www.npmjs.com/package/@tetherai/mistral)
+
+**Standalone Mistral provider** - Everything you need in one package!
+
+- **Zero Dependencies**: Everything included, no external packages needed
+- **Production Ready**: Built-in retry, fallback, and error handling
+- **Highly Configurable**: Timeouts, custom endpoints, API version control
+- **Edge Compatible**: Works everywhere from Node.js to Cloudflare Workers
+
+[![npm version](https://img.shields.io/npm/v/@tetherai/mistral.svg)](https://www.npmjs.com/package/@tetherai/mistral)
+[![npm downloads](https://img.shields.io/npm/dm/@tetherai/mistral.svg)](https://www.npmjs.com/package/@tetherai/mistral)
+
+[Full README](https://github.com/nbursa/TetherAI/blob/main/packages/provider/mistral/README.md)
+
+### [@tetherai/grok](https://www.npmjs.com/package/@tetherai/grok)
+
+**Standalone Grok AI (xAI) provider** - Everything you need in one package!
+
+- **Zero Dependencies**: Everything included, no external packages needed
+- **Production Ready**: Built-in retry, fallback, and error handling
+- **Highly Configurable**: Timeouts, custom endpoints, API version control
+- **Edge Compatible**: Works everywhere from Node.js to Cloudflare Workers
+- **xAI Integration**: Native support for Grok models (grok-beta, grok-beta-vision, etc.)
+
+[![npm version](https://img.shields.io/npm/v/@tetherai/grok.svg)](https://www.npmjs.com/package/@tetherai/grok)
+[![npm downloads](https://img.shields.io/npm/dm/@tetherai/grok.svg)](https://www.npmjs.com/package/@tetherai/grok)
+
+[Full README](https://github.com/nbursa/TetherAI/blob/main/packages/provider/grok/README.md)
+
+### [@tetherai/local](https://www.npmjs.com/package/@tetherai/local)
+
+**Standalone Local LLM provider** - Everything you need in one package!
+
+- **Zero Dependencies**: Everything included, no external packages needed
+- **Production Ready**: Built-in retry, fallback, and error handling
+- **Highly Configurable**: Timeouts, custom endpoints, API version control
+- **Edge Compatible**: Works everywhere from Node.js to Cloudflare Workers
+- **Local Endpoint Support**: Ollama, LM Studio, and custom OpenAI-compatible APIs
+
+[![npm version](https://img.shields.io/npm/v/@tetherai/local.svg)](https://www.npmjs.com/package/@tetherai/local)
+[![npm downloads](https://img.shields.io/npm/dm/@tetherai/local.svg)](https://www.npmjs.com/package/@tetherai/local)
+
+[Full README](https://github.com/nbursa/TetherAI/blob/main/packages/provider/local/README.md)
 
 ## Why TetherAI?
 
