@@ -32,10 +32,15 @@ async function copySharedFiles() {
         const providerDir = join(rootDir, 'packages', 'provider', provider, 'src');
 
         try {
-            // Ensure provider src directory exists
             await mkdir(providerDir, { recursive: true });
 
             for (const file of SHARED_FILES) {
+                // Za Mistral, ne kopiraj types.ts jer ima svoje specifične tipove
+                if (provider === 'mistral' && file === 'types.ts') {
+                    console.log(`Skipping ${file} for ${provider} (has custom types)`);
+                    continue;
+                }
+
                 const sourcePath = join(rootDir, 'packages', 'shared', file);
                 const targetPath = join(providerDir, file);
 

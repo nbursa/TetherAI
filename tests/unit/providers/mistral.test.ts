@@ -124,9 +124,9 @@ describe("Mistral Provider", () => {
         user: "test-user",
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const stream = mockProvider.streamChat(request);
       if (Symbol.asyncIterator in stream) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for await (const chunk of stream as AsyncGenerator<unknown>) {
           // consume stream
         }
@@ -152,9 +152,9 @@ describe("Mistral Provider", () => {
         systemPrompt: "You are a helpful assistant.",
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const stream = mockProvider.streamChat(request);
       if (Symbol.asyncIterator in stream) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for await (const chunk of stream as AsyncGenerator<unknown>) {
           // consume stream
         }
@@ -181,9 +181,9 @@ describe("Mistral Provider", () => {
       };
 
       await expect(async () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const stream = mockProvider.streamChat(request);
         if (Symbol.asyncIterator in stream) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           for await (const chunk of stream as AsyncGenerator<unknown>) {
             // consume stream
           }
