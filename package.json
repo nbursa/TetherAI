@@ -7,11 +7,17 @@
   ],
   "packageManager": "pnpm@9.0.0",
   "scripts": {
-    "build": "pnpm --filter @tetherai/openai build",
-    "dev:next": "pnpm --filter @tetherai/openai build && pnpm --filter tetherai-nextjs-example dev",
-    "prelint": "pnpm --filter @tetherai/openai run build",
+    "prebuild": "node scripts/copy-shared.mjs",
+    "build": "npm run prebuild && npm run build:providers",
+    "build:providers": "npm run prebuild && npm run build:openai && npm run build:anthropic",
+    "build:openai": "cd packages/provider/openai && npm run build",
+    "build:anthropic": "cd packages/provider/anthropic && npm run build",
+    "dev:next": "npm run build && cd examples/nextjs && npm run dev",
+    "prelint": "npm run build",
     "lint": "eslint . --ext .ts,.tsx",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "copy-shared": "node scripts/copy-shared.mjs",
+    "clean": "rm -rf packages/provider/*/dist"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",

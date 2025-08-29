@@ -6,3 +6,4 @@ packages/*/*/dist
 node_modules
 packages/*/*/*.tgz
 .DS_Store
+docs/

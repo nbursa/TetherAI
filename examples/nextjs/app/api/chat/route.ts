@@ -93,7 +93,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const provider = withRetry(openAI({ apiKey }), { retries: 2 });
+  const provider = withRetry(
+    openAI({
+      apiKey,
+      timeout: 30000,
+      maxRetries: 2,
+    }),
+    { retries: 2 }
+  );
 
   // Parse body as unknown, then safely coerce
   const raw: unknown = await req.json();
