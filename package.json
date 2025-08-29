@@ -13,9 +13,10 @@
   "scripts": {
     "prebuild": "node scripts/copy-shared.mjs",
     "build": "pnpm run prebuild && pnpm run build:providers",
-    "build:providers": "pnpm run prebuild && pnpm run build:openai && pnpm run build:anthropic",
+    "build:providers": "pnpm run prebuild && pnpm run build:openai && pnpm run build:anthropic && pnpm run build:mistral",
     "build:openai": "cd packages/provider/openai && pnpm run build",
     "build:anthropic": "cd packages/provider/anthropic && pnpm run build",
+    "build:mistral": "cd packages/provider/mistral && pnpm run build",
     "dev:next": "pnpm run build && cd examples/nextjs && pnpm run dev",
     "prelint": "pnpm run build",
     "lint": "pnpm run lint:check",

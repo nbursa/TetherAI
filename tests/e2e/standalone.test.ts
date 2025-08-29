@@ -87,6 +87,46 @@ describe("Standalone Provider Tests", () => {
     });
   });
 
+  describe("Mistral Provider", () => {
+    it("should import successfully", async () => {
+      try {
+        const mistralModule = await import(
+          resolve(projectRoot, "packages/provider/mistral/dist/src/index.js")
+        );
+
+        expect(mistralModule).toBeDefined();
+        expect(typeof mistralModule.mistral).toBe("function");
+        expect(typeof mistralModule.withRetry).toBe("function");
+        expect(typeof mistralModule.withFallback).toBe("function");
+
+        console.log("✅ Mistral provider imported successfully");
+        console.log("Available exports:", Object.keys(mistralModule));
+      } catch (error) {
+        console.error("❌ Mistral provider import failed:", error);
+        throw error;
+      }
+    });
+
+    it("should have core functionality", async () => {
+      try {
+        const mistralModule = await import(
+          resolve(projectRoot, "packages/provider/mistral/dist/src/index.js")
+        );
+
+        // Check for core functions and error classes
+        expect("mistral" in mistralModule).toBe(true);
+        expect("MistralError" in mistralModule).toBe(true);
+        expect("withRetry" in mistralModule).toBe(true);
+        expect("withRetry" in mistralModule).toBe(true);
+
+        console.log("✅ Mistral provider has core functionality");
+      } catch (error) {
+        console.error("❌ Mistral core functionality check failed:", error);
+        throw error;
+      }
+    });
+  });
+
   describe("Provider Independence", () => {
     it("should have independent types and functions", async () => {
       const openaiModule = await import(
@@ -95,16 +135,22 @@ describe("Standalone Provider Tests", () => {
       const anthropicModule = await import(
         resolve(projectRoot, "packages/provider/anthropic/dist/src/index.js")
       );
+      const mistralModule = await import(
+        resolve(projectRoot, "packages/provider/mistral/dist/src/index.js")
+      );
 
       // Check that they have their own functions
       expect("openAI" in openaiModule).toBe(true);
       expect("anthropic" in anthropicModule).toBe(true);
+      expect("mistral" in mistralModule).toBe(true);
 
       // Check that they have shared middleware
       expect("withRetry" in openaiModule).toBe(true);
       expect("withFallback" in openaiModule).toBe(true);
       expect("withRetry" in anthropicModule).toBe(true);
       expect("withFallback" in anthropicModule).toBe(true);
+      expect("withRetry" in mistralModule).toBe(true);
+      expect("withFallback" in mistralModule).toBe(true);
 
       console.log("✅ Providers are independent!");
     });

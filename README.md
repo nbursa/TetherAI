@@ -15,10 +15,14 @@ Think of it as _"Express for AI providers" with everything included_.
 - **Rich Error Handling**: Provider-specific error classes with HTTP status codes
 - **Edge Runtime**: Works everywhere from Node.js to Cloudflare Workers
 - **SSE Utilities**: Built-in Server-Sent Events parsing
+- **Multiple Providers**: OpenAI, Anthropic, and Mistral AI support
 
 ## Architecture
 
 - `packages/provider/` – **standalone provider packages** (no external deps)
+  - `@tetherai/openai` – OpenAI provider
+  - `@tetherai/anthropic` – Anthropic provider  
+  - `@tetherai/mistral` – Mistral AI provider
 - `packages/shared/` – internal development tooling (not published)
 - `examples/` – demo applications (Next.js, Node.js, etc.)
 
@@ -30,6 +34,8 @@ Think of it as _"Express for AI providers" with everything included_.
    npm install @tetherai/openai
    # or
    npm install @tetherai/anthropic
+   # or
+   npm install @tetherai/mistral
    ```
 
 2. **Run an example locally**:
@@ -83,6 +89,7 @@ const provider = openAI({
 ```ts
 import { withRetry, withFallback } from "@tetherai/openai";
 import { anthropic } from "@tetherai/anthropic";
+import { mistral } from "@tetherai/mistral";
 
 const resilientProvider = withFallback([
   withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), { 
@@ -92,6 +99,9 @@ const resilientProvider = withFallback([
     jitter: true
   }),
   withRetry(anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! }), { 
+    retries: 2 
+  }),
+  withRetry(mistral({ apiKey: process.env.MISTRAL_API_KEY! }), { 
     retries: 2 
   })
 ], {

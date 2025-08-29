@@ -95,6 +95,7 @@ export interface MockGlobalConfig {
   providers: {
     openai: MockProviderConfig;
     anthropic: MockProviderConfig;
+    mistral: MockProviderConfig;
   };
   middleware: MockMiddlewareConfig;
   timeout?: number;

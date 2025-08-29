@@ -12,7 +12,7 @@ describe("Provider Integration Tests", () => {
 
   describe("Provider Import Compatibility", () => {
     it("should have consistent interfaces across providers", async () => {
-      // Mock both providers with consistent interfaces
+      // Mock all providers with consistent interfaces
       const mockOpenAI = {
         streamChat: vi.fn(),
         chat: vi.fn(),
@@ -23,14 +23,21 @@ describe("Provider Integration Tests", () => {
         chat: vi.fn(),
       };
 
-      // Verify both have the same methods
+      const mockMistral = {
+        streamChat: vi.fn(),
+        chat: vi.fn(),
+      };
+
+      // Verify all have the same methods
       expect(typeof mockOpenAI.streamChat).toBe("function");
       expect(typeof mockOpenAI.chat).toBe("function");
       expect(typeof mockAnthropic.streamChat).toBe("function");
       expect(typeof mockAnthropic.chat).toBe("function");
+      expect(typeof mockMistral.streamChat).toBe("function");
+      expect(typeof mockMistral.chat).toBe("function");
 
       // Verify they can be used interchangeably
-      const providers = [mockOpenAI, mockAnthropic];
+      const providers = [mockOpenAI, mockAnthropic, mockMistral];
 
       for (const provider of providers) {
         expect(provider).toHaveProperty("streamChat");
@@ -268,6 +275,7 @@ describe("Provider Integration Tests", () => {
         providers: {
           openai: { apiKey: "sk-default-openai" },
           anthropic: { apiKey: "sk-default-anthropic" },
+          mistral: { apiKey: "sk-default-mistral" },
         },
         timeout: 30000,
         maxRetries: 3,

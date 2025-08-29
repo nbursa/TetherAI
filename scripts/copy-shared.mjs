@@ -19,9 +19,9 @@ const SHARED_FILES = [
 const PROVIDER_PACKAGES = [
     'openai',
     'anthropic',
+    'mistral',
     // Add more providers here
     // 'grok',
-    // 'mistral',
     // 'local'
 ];
 
