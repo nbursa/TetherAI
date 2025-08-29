@@ -20,6 +20,8 @@ const PROVIDER_PACKAGES = [
     'openai',
     'anthropic',
     'mistral',
+    'grok',
+    'local',
     // Add more providers here
     // 'grok',
     // 'local'
@@ -35,8 +37,7 @@ async function copySharedFiles() {
             await mkdir(providerDir, { recursive: true });
 
             for (const file of SHARED_FILES) {
-                // Za Mistral, ne kopiraj types.ts jer ima svoje specifične tipove
-                if (provider === 'mistral' && file === 'types.ts') {
+                if ((provider === 'mistral' || provider === 'grok' || provider === 'local') && file === 'types.ts') {
                     console.log(`Skipping ${file} for ${provider} (has custom types)`);
                     continue;
                 }

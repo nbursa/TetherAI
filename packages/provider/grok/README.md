@@ -1,19 +1,19 @@
-# @tetherai/mistral
+# @tetherai/grok
 
-[![npm version](https://img.shields.io/npm/v/@tetherai/mistral.svg)](https://www.npmjs.com/package/@tetherai/mistral)
-[![npm downloads](https://img.shields.io/npm/dm/@tetherai/mistral.svg)](https://www.npmjs.com/package/@tetherai/mistral)
+[![npm version](https://img.shields.io/npm/v/@tetherai/grok.svg)](https://www.npmjs.com/package/@tetherai/grok)
+[![npm downloads](https://img.shields.io/npm/dm/@tetherai/grok.svg)](https://www.npmjs.com/package/@tetherai/grok)
 [![Build](https://github.com/nbursa/TetherAI/actions/workflows/ci.yml/badge.svg)](https://github.com/nbursa/TetherAI/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/nbursa/TetherAI/blob/HEAD/LICENSE)
 
-> **Standalone Mistral provider for TetherAI** - Everything you need in one package!
+> **Standalone Grok provider for TetherAI** - Everything you need in one package!
 
-This package provides a **complete, streaming-first solution** for the Mistral AI Chat Completions API.  
+This package provides a **complete, streaming-first solution** for the Grok AI (xAI) Chat Completions API.  
 **No external dependencies required** - includes all types, utilities, and middleware built-in.  
 Think of it as *Express for AI providers* with everything included.
 
 ## What's Included
 
-- **Mistral Provider**: Streaming chat completions with full API support
+- **Grok Provider**: Streaming chat completions with full API support
 - **Enhanced Chat Options**: Temperature, maxTokens, topP, frequencyPenalty, presencePenalty, stop sequences, system prompts
 - **Non-Streaming Chat**: Complete response handling for simple requests
 - **Model Management**: List models, validate model IDs, get token limits
@@ -29,11 +29,11 @@ Think of it as *Express for AI providers* with everything included.
 ### Installation
 
 ```bash
-npm install @tetherai/mistral
+npm install @tetherai/grok
 # or
-pnpm add @tetherai/mistral
+pnpm add @tetherai/grok
 # or
-yarn add @tetherai/mistral
+yarn add @tetherai/grok
 ```
 
 **That's it!** No additional packages needed - everything is included.
@@ -43,22 +43,22 @@ yarn add @tetherai/mistral
 Set your API key:
 
 ```bash
-export MISTRAL_API_KEY=mist-...
+export GROK_API_KEY=sk-...
 ```
 
 #### Streaming Chat Example
 
 ```ts
-import { mistral } from "@tetherai/mistral";
+import { grok } from "@tetherai/grok";
 
-const provider = mistral({ 
-  apiKey: process.env.MISTRAL_API_KEY!,
+const provider = grok({ 
+  apiKey: process.env.GROK_API_KEY!,
   timeout: 30000,        // 30 second timeout
   maxRetries: 2          // Built-in retry configuration
 });
 
 for await (const chunk of provider.streamChat({
-  model: "mistral-large-latest",
+  model: "grok-beta",
   messages: [{ role: "user", content: "Hello!" }],
   temperature: 0.7,      // Enhanced chat options
   maxTokens: 1000,
@@ -73,7 +73,7 @@ for await (const chunk of provider.streamChat({
 
 ```ts
 const response = await provider.chat({
-  model: "mistral-large-latest",
+  model: "grok-beta",
   messages: [{ role: "user", content: "Hello!" }],
   temperature: 0.5,
   maxTokens: 500,
@@ -92,11 +92,11 @@ const models = await provider.getModels();
 console.log("Available models:", models);
 
 // Validate model ID
-const isValid = provider.validateModel("mistral-large-latest");
+const isValid = provider.validateModel("grok-beta");
 console.log("Model valid:", isValid);
 
 // Get token limits
-const maxTokens = provider.getMaxTokens("mistral-large-latest");
+const maxTokens = provider.getMaxTokens("grok-beta");
 console.log("Max tokens:", maxTokens);
 ```
 
@@ -105,9 +105,9 @@ console.log("Max tokens:", maxTokens);
 ### Provider Configuration
 
 ```ts
-interface MistralOptions {
-  apiKey: string;           // Required: Your Mistral API key
-  baseURL?: string;         // Optional: Custom API endpoint (default: https://api.mistral.ai/v1)
+interface GrokOptions {
+  apiKey: string;           // Required: Your Grok API key
+  baseURL?: string;         // Optional: Custom API endpoint (default: https://api.x.ai/v1)
   timeout?: number;         // Optional: Request timeout in milliseconds (default: 30000)
   maxRetries?: number;      // Optional: Built-in retry attempts (default: 2)
   fetch?: typeof fetch;     // Optional: Custom fetch implementation
@@ -118,7 +118,7 @@ interface MistralOptions {
 
 ```ts
 const stream = provider.streamChat({
-  model: "mistral-large-latest",        // Required: Model to use
+  model: "grok-beta",                    // Required: Model to use
   messages: [                            // Required: Conversation history
     { role: "user", content: "Hello" }
   ],
@@ -142,7 +142,7 @@ for await (const chunk of stream) {
 
 ```ts
 const response = await provider.chat({
-  model: "mistral-large-latest",
+  model: "grok-beta",
   messages: [{ role: "user", content: "Hello" }],
   temperature: 0.7,
   maxTokens: 1000,
@@ -160,41 +160,41 @@ console.log(`Usage: ${response.usage.totalTokens} tokens`);
 ```ts
 // List available models
 const models = await provider.getModels();
-// Returns: ['mistral-tiny', 'mistral-small', 'mistral-medium', 'mistral-large']
+// Returns: ['grok-beta', 'grok-beta-vision', 'grok-beta-2', 'grok-beta-2-vision']
 
 // Validate model ID
-const isValid = provider.validateModel("mistral-large-latest");     // true
-const isInvalid = provider.validateModel("gpt-4");                 // false
+const isValid = provider.validateModel("grok-beta");     // true
+const isInvalid = provider.validateModel("gpt-4");       // false
 
 // Get token limits
-const maxTokens = provider.getMaxTokens("mistral-large-latest");   // 32768
-const smallTokens = provider.getMaxTokens("mistral-small-latest"); // 32768
+const maxTokens = provider.getMaxTokens("grok-beta");           // 8192
+const visionTokens = provider.getMaxTokens("grok-beta-vision"); // 128000
 ```
 
 ## Supported Models
 
 | Model | Context | Description |
 |-------|---------|-------------|
-| `mistral-tiny` | 32K | Fast and efficient model |
-| `mistral-small` | 32K | Balanced performance and speed |
-| `mistral-medium` | 32K | High-quality responses |
-| `mistral-large` | 32K | Most capable model |
+| `grok-beta` | 8K | Base Grok model for text generation |
+| `grok-beta-vision` | 128K | Grok with vision capabilities |
+| `grok-beta-2` | 128K | Enhanced Grok model |
+| `grok-beta-2-vision` | 128K | Enhanced Grok with vision |
 
 ## Error Handling
 
-The provider throws `MistralError` for API-related errors:
+The provider throws `GrokError` for API-related errors:
 
 ```ts
-import { MistralError } from "@tetherai/mistral";
+import { GrokError } from "@tetherai/grok";
 
 try {
   const response = await provider.chat({
-    model: "mistral-large-latest",
+    model: "grok-beta",
     messages: [{ role: "user", content: "Hello" }]
   });
 } catch (error) {
-  if (error instanceof MistralError) {
-    console.error(`Mistral API Error ${error.status}: ${error.message}`);
+  if (error instanceof GrokError) {
+    console.error(`Grok API Error ${error.status}: ${error.message}`);
     
     switch (error.status) {
       case 401:
@@ -215,7 +215,7 @@ try {
 
 ### Error Types
 
-- `MistralError` - Base error class with HTTP status and message
+- `GrokError` - Base error class with HTTP status and message
 - `401` - Authentication failed (invalid API key)
 - `429` - Rate limit exceeded
 - `500` - Server error
@@ -226,7 +226,7 @@ try {
 ### Retry Middleware
 
 ```ts
-import { withRetry } from "@tetherai/mistral";
+import { withRetry } from "@tetherai/grok";
 
 const retryProvider = withRetry(provider, {
   maxRetries: 3,
@@ -236,7 +236,7 @@ const retryProvider = withRetry(provider, {
 
 // Use with automatic retries
 const response = await retryProvider.chat({
-  model: "mistral-large-latest",
+  model: "grok-beta",
   messages: [{ role: "user", content: "Hello" }]
 });
 ```
@@ -244,7 +244,7 @@ const response = await retryProvider.chat({
 ### Fallback Middleware
 
 ```ts
-import { withFallback } from "@tetherai/mistral";
+import { withFallback } from "@tetherai/grok";
 
 const fallbackProvider = withFallback(provider, {
   fallbackProvider: backupProvider,
@@ -253,7 +253,7 @@ const fallbackProvider = withFallback(provider, {
 
 // Automatically fallback on rate limits
 const response = await fallbackProvider.chat({
-  model: "mistral-large-latest",
+  model: "grok-beta",
   messages: [{ role: "user", content: "Hello" }]
 });
 ```
@@ -264,7 +264,7 @@ const response = await fallbackProvider.chat({
 
 ```ts
 const stream = provider.streamChat({
-  model: "mistral-large-latest",
+  model: "grok-beta",
   messages: [
     { role: "user", content: "Write a Python function to calculate fibonacci numbers" }
   ],
@@ -286,20 +286,20 @@ console.log("\n\nFull response:", fullResponse);
 ### Error Recovery with Fallback
 
 ```ts
-import { mistral } from "@tetherai/mistral";
-import { withFallback } from "@tetherai/mistral";
+import { grok } from "@tetherai/grok";
+import { withFallback } from "@tetherai/grok";
 
-const mistralProvider = mistral({ apiKey: process.env.MISTRAL_API_KEY! });
+const grokProvider = grok({ apiKey: process.env.GROK_API_KEY! });
 const backupProvider = openAI({ apiKey: process.env.OPENAI_API_KEY! });
 
-const fallbackProvider = withFallback(mistralProvider, {
+const fallbackProvider = withFallback(grokProvider, {
   fallbackProvider: backupProvider,
   shouldFallback: (error) => error.status === 429 || error.status >= 500
 });
 
 try {
   const response = await fallbackProvider.chat({
-    model: "mistral-large-latest",
+    model: "grok-beta",
     messages: [{ role: "user", content: "Hello" }]
   });
   console.log("Response:", response.content);
@@ -311,8 +311,8 @@ try {
 ### Custom Fetch Implementation
 
 ```ts
-const customProvider = mistral({
-  apiKey: process.env.MISTRAL_API_KEY!,
+const customProvider = grok({
+  apiKey: process.env.GROK_API_KEY!,
   fetch: async (url, options) => {
     // Add custom headers
     const customOptions = {
@@ -334,27 +334,27 @@ Full TypeScript support with zero `any` types:
 
 ```ts
 import { 
-  mistral, 
-  MistralOptions, 
-  MistralError, 
+  grok, 
+  GrokOptions, 
+  GrokError, 
   ChatResponse,
   StreamChatOptions 
-} from "@tetherai/mistral";
+} from "@tetherai/grok";
 
-const options: MistralOptions = {
-  apiKey: process.env.MISTRAL_API_KEY!,
-  baseURL: "https://api.mistral.ai/v1",
+const options: GrokOptions = {
+  apiKey: process.env.GROK_API_KEY!,
+  baseURL: "https://api.x.ai/v1",
   timeout: 30000
 };
 
-const provider = mistral(options);
+const provider = grok(options);
 
-async function chatWithMistral(options: StreamChatOptions): Promise<ChatResponse> {
+async function chatWithGrok(options: StreamChatOptions): Promise<ChatResponse> {
   try {
     return await provider.chat(options);
   } catch (error) {
-    if (error instanceof MistralError) {
-      console.error(`Mistral error: ${error.message}`);
+    if (error instanceof GrokError) {
+      console.error(`Grok error: ${error.message}`);
     }
     throw error;
   }
@@ -369,13 +369,13 @@ Works everywhere from Node.js to Cloudflare Workers:
 // Cloudflare Worker
 export default {
   async fetch(request: Request): Promise<Response> {
-    const provider = mistral({ 
-      apiKey: env.MISTRAL_API_KEY,
+    const provider = grok({ 
+      apiKey: env.GROK_API_KEY,
       fetch: globalThis.fetch 
     });
     
     const response = await provider.chat({
-      model: "mistral-large-latest",
+      model: "grok-beta",
       messages: [{ role: "user", content: "Hello from Cloudflare!" }]
     });
     

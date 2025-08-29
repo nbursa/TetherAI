@@ -1,19 +1,19 @@
-# @tetherai/mistral
+# @tetherai/local
 
-[![npm version](https://img.shields.io/npm/v/@tetherai/mistral.svg)](https://www.npmjs.com/package/@tetherai/mistral)
-[![npm downloads](https://img.shields.io/npm/dm/@tetherai/mistral.svg)](https://www.npmjs.com/package/@tetherai/mistral)
+[![npm version](https://img.shields.io/npm/v/@tetherai/local.svg)](https://www.npmjs.com/package/@tetherai/local)
+[![npm downloads](https://img.shields.io/npm/dm/@tetherai/local.svg)](https://www.npmjs.com/package/@tetherai/local)
 [![Build](https://github.com/nbursa/TetherAI/actions/workflows/ci.yml/badge.svg)](https://github.com/nbursa/TetherAI/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/nbursa/TetherAI/blob/HEAD/LICENSE)
 
-> **Standalone Mistral provider for TetherAI** - Everything you need in one package!
+> **Standalone Local LLM provider for TetherAI** - Everything you need in one package!
 
-This package provides a **complete, streaming-first solution** for the Mistral AI Chat Completions API.  
+This package provides a **complete, streaming-first solution** for local LLM models via OpenAI-compatible APIs.  
 **No external dependencies required** - includes all types, utilities, and middleware built-in.  
 Think of it as *Express for AI providers* with everything included.
 
 ## What's Included
 
-- **Mistral Provider**: Streaming chat completions with full API support
+- **Local LLM Provider**: Streaming chat completions with full API support
 - **Enhanced Chat Options**: Temperature, maxTokens, topP, frequencyPenalty, presencePenalty, stop sequences, system prompts
 - **Non-Streaming Chat**: Complete response handling for simple requests
 - **Model Management**: List models, validate model IDs, get token limits
@@ -29,36 +29,36 @@ Think of it as *Express for AI providers* with everything included.
 ### Installation
 
 ```bash
-npm install @tetherai/mistral
+npm install @tetherai/local
 # or
-pnpm add @tetherai/mistral
+pnpm add @tetherai/local
 # or
-yarn add @tetherai/mistral
+yarn add @tetherai/local
 ```
 
 **That's it!** No additional packages needed - everything is included.
 
 ### Basic Usage
 
-Set your API key:
+Set your local endpoint:
 
 ```bash
-export MISTRAL_API_KEY=mist-...
+export LOCAL_LLM_URL=http://localhost:11434
 ```
 
 #### Streaming Chat Example
 
 ```ts
-import { mistral } from "@tetherai/mistral";
+import { localLLM } from "@tetherai/local";
 
-const provider = mistral({ 
-  apiKey: process.env.MISTRAL_API_KEY!,
-  timeout: 30000,        // 30 second timeout
+const provider = localLLM({ 
+  baseURL: process.env.LOCAL_LLM_URL!,
+  timeout: 60000,        // 60 second timeout for local models
   maxRetries: 2          // Built-in retry configuration
 });
 
 for await (const chunk of provider.streamChat({
-  model: "mistral-large-latest",
+  model: "llama2:7b",
   messages: [{ role: "user", content: "Hello!" }],
   temperature: 0.7,      // Enhanced chat options
   maxTokens: 1000,
@@ -73,7 +73,7 @@ for await (const chunk of provider.streamChat({
 
 ```ts
 const response = await provider.chat({
-  model: "mistral-large-latest",
+  model: "llama2:7b",
   messages: [{ role: "user", content: "Hello!" }],
   temperature: 0.5,
   maxTokens: 500,
@@ -92,11 +92,11 @@ const models = await provider.getModels();
 console.log("Available models:", models);
 
 // Validate model ID
-const isValid = provider.validateModel("mistral-large-latest");
+const isValid = provider.validateModel("llama2:7b");
 console.log("Model valid:", isValid);
 
 // Get token limits
-const maxTokens = provider.getMaxTokens("mistral-large-latest");
+const maxTokens = provider.getMaxTokens("llama2:7b");
 console.log("Max tokens:", maxTokens);
 ```
 
@@ -105,9 +105,9 @@ console.log("Max tokens:", maxTokens);
 ### Provider Configuration
 
 ```ts
-interface MistralOptions {
-  apiKey: string;           // Required: Your Mistral API key
-  baseURL?: string;         // Optional: Custom API endpoint (default: https://api.mistral.ai/v1)
+interface LocalLLMOptions {
+  baseURL: string;          // Required: Your local LLM endpoint
+  apiKey?: string;          // Optional: API key if required by your endpoint
   timeout?: number;         // Optional: Request timeout in milliseconds (default: 30000)
   maxRetries?: number;      // Optional: Built-in retry attempts (default: 2)
   fetch?: typeof fetch;     // Optional: Custom fetch implementation
@@ -118,7 +118,7 @@ interface MistralOptions {
 
 ```ts
 const stream = provider.streamChat({
-  model: "mistral-large-latest",        // Required: Model to use
+  model: "llama2:7b",                   // Required: Model to use
   messages: [                            // Required: Conversation history
     { role: "user", content: "Hello" }
   ],
@@ -142,7 +142,7 @@ for await (const chunk of stream) {
 
 ```ts
 const response = await provider.chat({
-  model: "mistral-large-latest",
+  model: "llama2:7b",
   messages: [{ role: "user", content: "Hello" }],
   temperature: 0.7,
   maxTokens: 1000,
@@ -160,51 +160,64 @@ console.log(`Usage: ${response.usage.totalTokens} tokens`);
 ```ts
 // List available models
 const models = await provider.getModels();
-// Returns: ['mistral-tiny', 'mistral-small', 'mistral-medium', 'mistral-large']
+// Returns: ['llama2:7b', 'codellama:7b', 'mistral:7b', 'gpt-3.5-turbo']
 
-// Validate model ID
-const isValid = provider.validateModel("mistral-large-latest");     // true
-const isInvalid = provider.validateModel("gpt-4");                 // false
+// Validate model ID (always true for local models)
+const isValid = provider.validateModel("llama2:7b");     // true
+const isInvalid = provider.validateModel("nonexistent"); // true (local models are flexible)
 
 // Get token limits
-const maxTokens = provider.getMaxTokens("mistral-large-latest");   // 32768
-const smallTokens = provider.getMaxTokens("mistral-small-latest"); // 32768
+const maxTokens = provider.getMaxTokens("llama2:7b");        // 4096
+const codeTokens = provider.getMaxTokens("codellama:7b");    // 16384
+const mistralTokens = provider.getMaxTokens("mistral:7b");   // 8192
 ```
+
+## Supported Endpoints
+
+| Endpoint | URL | Description |
+|----------|-----|-------------|
+| **Ollama** | `http://localhost:11434` | Local model serving (default) |
+| **LM Studio** | `http://localhost:1234/v1` | Local model management |
+| **Custom** | `http://your-endpoint:8000` | Any OpenAI-compatible API |
+| **Network** | `http://192.168.1.100:8000` | Remote local servers |
 
 ## Supported Models
 
-| Model | Context | Description |
-|-------|---------|-------------|
-| `mistral-tiny` | 32K | Fast and efficient model |
-| `mistral-small` | 32K | Balanced performance and speed |
-| `mistral-medium` | 32K | High-quality responses |
-| `mistral-large` | 32K | Most capable model |
+Local LLM provider supports any model available on your endpoint:
+
+| Model Type | Max Tokens | Description |
+|------------|------------|-------------|
+| `llama2:*` | 4,096 | Llama 2 family models |
+| `codellama:*` | 16,384 | Code Llama models |
+| `mistral:*` | 8,192 | Mistral models |
+| `gpt-*` | 4,096 | GPT family models |
+| Custom models | 8,192 | Any other model names |
 
 ## Error Handling
 
-The provider throws `MistralError` for API-related errors:
+The provider throws `LocalLLMError` for API-related errors:
 
 ```ts
-import { MistralError } from "@tetherai/mistral";
+import { LocalLLMError } from "@tetherai/local";
 
 try {
   const response = await provider.chat({
-    model: "mistral-large-latest",
+    model: "llama2:7b",
     messages: [{ role: "user", content: "Hello" }]
   });
 } catch (error) {
-  if (error instanceof MistralError) {
-    console.error(`Mistral API Error ${error.status}: ${error.message}`);
+  if (error instanceof LocalLLMError) {
+    console.error(`Local LLM Error ${error.status}: ${error.message}`);
     
     switch (error.status) {
-      case 401:
-        console.error("Invalid API key");
+      case 404:
+        console.error("Model not found - check if it's downloaded");
         break;
-      case 429:
-        console.error("Rate limit exceeded");
+      case 503:
+        console.error("Service unavailable - check if Ollama/LM Studio is running");
         break;
       case 500:
-        console.error("Server error");
+        console.error("Server error - check local LLM logs");
         break;
       default:
         console.error("Unexpected error");
@@ -215,9 +228,9 @@ try {
 
 ### Error Types
 
-- `MistralError` - Base error class with HTTP status and message
-- `401` - Authentication failed (invalid API key)
-- `429` - Rate limit exceeded
+- `LocalLLMError` - Base error class with HTTP status and message
+- `404` - Model not found
+- `503` - Service unavailable
 - `500` - Server error
 - `400` - Bad request (invalid parameters)
 
@@ -226,7 +239,7 @@ try {
 ### Retry Middleware
 
 ```ts
-import { withRetry } from "@tetherai/mistral";
+import { withRetry } from "@tetherai/local";
 
 const retryProvider = withRetry(provider, {
   maxRetries: 3,
@@ -236,7 +249,7 @@ const retryProvider = withRetry(provider, {
 
 // Use with automatic retries
 const response = await retryProvider.chat({
-  model: "mistral-large-latest",
+  model: "llama2:7b",
   messages: [{ role: "user", content: "Hello" }]
 });
 ```
@@ -244,33 +257,63 @@ const response = await retryProvider.chat({
 ### Fallback Middleware
 
 ```ts
-import { withFallback } from "@tetherai/mistral";
+import { withFallback } from "@tetherai/local";
 
 const fallbackProvider = withFallback(provider, {
-  fallbackProvider: backupProvider,
-  shouldFallback: (error) => error.status === 429
+  fallbackProvider: cloudProvider,
+  shouldFallback: (error) => error.status === 503
 });
 
-// Automatically fallback on rate limits
+// Automatically fallback on service unavailability
 const response = await fallbackProvider.chat({
-  model: "mistral-large-latest",
+  model: "llama2:7b",
   messages: [{ role: "user", content: "Hello" }]
 });
 ```
 
 ## Advanced Examples
 
-### Streaming with System Prompt
+### Ollama Setup
 
 ```ts
-const stream = provider.streamChat({
-  model: "mistral-large-latest",
+import { localLLM } from "@tetherai/local";
+
+// Start Ollama and pull a model
+// ollama pull llama2:7b
+
+const provider = localLLM({
+  baseURL: "http://localhost:11434",
+  timeout: 60000, // Local models can be slower
+});
+
+const response = await provider.chat({
+  model: "llama2:7b",
   messages: [
-    { role: "user", content: "Write a Python function to calculate fibonacci numbers" }
+    { role: "user", content: "Explain machine learning in simple terms" }
   ],
-  systemPrompt: "You are a helpful coding assistant. Always provide working code examples.",
   temperature: 0.3,
   maxTokens: 2000
+});
+
+console.log(response.content);
+```
+
+### LM Studio Setup
+
+```ts
+const lmStudioProvider = localLLM({
+  baseURL: "http://localhost:1234/v1",
+  timeout: 60000, // Local models can be slower
+});
+
+const stream = lmStudioProvider.streamChat({
+  model: "gpt-3.5-turbo",
+  messages: [
+    { role: "user", content: "Write a Python function to sort a list" }
+  ],
+  systemPrompt: "You are a helpful coding assistant. Provide working code examples.",
+  temperature: 0.3,
+  maxTokens: 1500
 });
 
 let fullResponse = "";
@@ -283,23 +326,41 @@ for await (const chunk of stream) {
 console.log("\n\nFull response:", fullResponse);
 ```
 
+### Custom Network Endpoint
+
+```ts
+const remoteProvider = localLLM({
+  baseURL: "http://192.168.1.100:8000",
+  timeout: 45000,
+  apiKey: "your-api-key" // if required
+});
+
+const models = await remoteProvider.getModels();
+console.log("Available models:", models);
+
+const response = await remoteProvider.chat({
+  model: "custom-model",
+  messages: [{ role: "user", content: "Hello from remote server!" }]
+});
+```
+
 ### Error Recovery with Fallback
 
 ```ts
-import { mistral } from "@tetherai/mistral";
-import { withFallback } from "@tetherai/mistral";
+import { localLLM } from "@tetherai/local";
+import { withFallback } from "@tetherai/local";
 
-const mistralProvider = mistral({ apiKey: process.env.MISTRAL_API_KEY! });
-const backupProvider = openAI({ apiKey: process.env.OPENAI_API_KEY! });
+const localProvider = localLLM({ baseURL: "http://localhost:11434" });
+const cloudProvider = openAI({ apiKey: process.env.OPENAI_API_KEY! });
 
-const fallbackProvider = withFallback(mistralProvider, {
-  fallbackProvider: backupProvider,
-  shouldFallback: (error) => error.status === 429 || error.status >= 500
+const fallbackProvider = withFallback(localProvider, {
+  fallbackProvider: cloudProvider,
+  shouldFallback: (error) => error.status === 503 || error.status >= 500
 });
 
 try {
   const response = await fallbackProvider.chat({
-    model: "mistral-large-latest",
+    model: "llama2:7b",
     messages: [{ role: "user", content: "Hello" }]
   });
   console.log("Response:", response.content);
@@ -311,8 +372,8 @@ try {
 ### Custom Fetch Implementation
 
 ```ts
-const customProvider = mistral({
-  apiKey: process.env.MISTRAL_API_KEY!,
+const customProvider = localLLM({
+  baseURL: "http://localhost:11434",
   fetch: async (url, options) => {
     // Add custom headers
     const customOptions = {
@@ -328,33 +389,60 @@ const customProvider = mistral({
 });
 ```
 
+## Setup Guides
+
+### Ollama
+
+1. **Install Ollama**: <https://ollama.ai/>
+2. **Pull a model**: `ollama pull llama2:7b`
+3. **Start Ollama service**: `ollama serve`
+4. **Use the provider**: `baseURL: 'http://localhost:11434'`
+
+### LM Studio
+
+1. **Download LM Studio**: <https://lmstudio.ai/>
+2. **Download a model** (GGUF format)
+3. **Start local server** in LM Studio
+4. **Use the provider**: `baseURL: 'http://localhost:1234/v1'`
+
+### Custom Endpoints
+
+Any OpenAI-compatible API endpoint will work:
+
+```ts
+const customProvider = localLLM({
+  baseURL: "http://your-custom-endpoint:8000",
+  apiKey: "your-api-key", // if required
+  timeout: 30000
+});
+```
+
 ## TypeScript
 
 Full TypeScript support with zero `any` types:
 
 ```ts
 import { 
-  mistral, 
-  MistralOptions, 
-  MistralError, 
+  localLLM, 
+  LocalLLMOptions, 
+  LocalLLMError, 
   ChatResponse,
   StreamChatOptions 
-} from "@tetherai/mistral";
+} from "@tetherai/local";
 
-const options: MistralOptions = {
-  apiKey: process.env.MISTRAL_API_KEY!,
-  baseURL: "https://api.mistral.ai/v1",
+const options: LocalLLMOptions = {
+  baseURL: "http://localhost:11434",
   timeout: 30000
 };
 
-const provider = mistral(options);
+const provider = localLLM(options);
 
-async function chatWithMistral(options: StreamChatOptions): Promise<ChatResponse> {
+async function chatWithLocalLLM(options: StreamChatOptions): Promise<ChatResponse> {
   try {
     return await provider.chat(options);
   } catch (error) {
-    if (error instanceof MistralError) {
-      console.error(`Mistral error: ${error.message}`);
+    if (error instanceof LocalLLMError) {
+      console.error(`Local LLM error: ${error.message}`);
     }
     throw error;
   }
@@ -369,13 +457,13 @@ Works everywhere from Node.js to Cloudflare Workers:
 // Cloudflare Worker
 export default {
   async fetch(request: Request): Promise<Response> {
-    const provider = mistral({ 
-      apiKey: env.MISTRAL_API_KEY,
+    const provider = localLLM({ 
+      baseURL: env.LOCAL_LLM_URL,
       fetch: globalThis.fetch 
     });
     
     const response = await provider.chat({
-      model: "mistral-large-latest",
+      model: "llama2:7b",
       messages: [{ role: "user", content: "Hello from Cloudflare!" }]
     });
     
@@ -386,11 +474,14 @@ export default {
 
 ## Performance Tips
 
+- **Local models are slower** than cloud APIs - use appropriate timeouts
+- **Memory usage** depends on model size - ensure sufficient RAM
+- **GPU acceleration** can significantly improve performance
+- **Batch requests** when possible to maximize throughput
 - **Use streaming** for real-time responses
 - **Set appropriate timeouts** for your use case
 - **Implement retry logic** for production reliability
 - **Use fallback providers** for high availability
-- **Batch requests** when possible
 
 ## License
 
