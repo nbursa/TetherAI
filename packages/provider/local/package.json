@@ -1,0 +1,40 @@
+{
+  "name": "@tetherai/local",
+  "version": "0.1.0",
+  "description": "Local LLM provider for TetherAI (Ollama, LM Studio, etc.)",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/dist.mjs",
+    "dev": "tsc -p tsconfig.json --watch"
+  },
+  "keywords": [
+    "ai",
+    "local",
+    "llm",
+    "ollama",
+    "lm-studio",
+    "chat",
+    "streaming",
+    "tetherai"
+  ],
+  "author": "TetherAI Team",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
