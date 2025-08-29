@@ -73,6 +73,9 @@ export function openAI(opts: OpenAIOptions): Provider {
         if (req.presencePenalty !== undefined)
           requestBody.presence_penalty = req.presencePenalty;
         if (req.stop !== undefined) requestBody.stop = req.stop;
+        if (req.seed !== undefined) requestBody.seed = req.seed;
+        if (req.logprobs !== undefined) requestBody.logprobs = req.logprobs;
+        if (req.logitBias !== undefined) requestBody.logit_bias = req.logitBias;
         if (req.responseFormat !== undefined)
           requestBody.response_format = { type: req.responseFormat };
         if (req.user !== undefined) requestBody.user = req.user;
@@ -162,6 +165,9 @@ export function openAI(opts: OpenAIOptions): Provider {
         if (req.presencePenalty !== undefined)
           requestBody.presence_penalty = req.presencePenalty;
         if (req.stop !== undefined) requestBody.stop = req.stop;
+        if (req.seed !== undefined) requestBody.seed = req.seed;
+        if (req.logprobs !== undefined) requestBody.logprobs = req.logprobs;
+        if (req.logitBias !== undefined) requestBody.logit_bias = req.logitBias;
         if (req.responseFormat !== undefined)
           requestBody.response_format = { type: req.responseFormat };
         if (req.user !== undefined) requestBody.user = req.user;
@@ -266,9 +272,11 @@ export function openAI(opts: OpenAIOptions): Provider {
       const validModels = [
         "gpt-4o",
         "gpt-4o-mini",
-        "gpt-4-turbo",
+        "gpt-4-turbo-preview",
         "gpt-4",
+        "gpt-4-32k",
         "gpt-3.5-turbo",
+        "gpt-3.5-turbo-16k",
       ];
       return validModels.some((model) => modelId.startsWith(model));
     },
@@ -276,7 +284,10 @@ export function openAI(opts: OpenAIOptions): Provider {
     // Get max tokens for model
     getMaxTokens(modelId: string): number {
       if (modelId.startsWith("gpt-4o")) return 128000;
+      if (modelId.startsWith("gpt-4-turbo-preview")) return 128000;
+      if (modelId.startsWith("gpt-4-32k")) return 32768;
       if (modelId.startsWith("gpt-4")) return 8192;
+      if (modelId.startsWith("gpt-3.5-turbo-16k")) return 16385;
       if (modelId.startsWith("gpt-3.5-turbo")) return 16385;
       return 4096; // default
     },

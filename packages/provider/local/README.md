@@ -100,6 +100,23 @@ const maxTokens = provider.getMaxTokens("llama2:7b");
 console.log("Max tokens:", maxTokens);
 ```
 
+## Parameter Mapping
+
+| TS Interface Field  | Local API Field            |
+|---------------------|----------------------------|
+| `maxTokens`         | `max_tokens`               |
+| `topP`              | `top_p`                    |
+| `responseFormat`    | `response_format.type`     |
+
+This provider assumes OpenAI‑compatible APIs. Fields are mapped automatically.
+
+## Middleware Compatibility
+
+| Feature        | Support |
+|----------------|---------|
+| `withRetry`    | ✅       |
+| `withFallback` | ✅       |
+
 ## API Reference
 
 ### Provider Configuration
@@ -183,15 +200,19 @@ const mistralTokens = provider.getMaxTokens("mistral:7b");   // 8192
 
 ## Supported Models
 
-Local LLM provider supports any model available on your endpoint:
+The Local provider supports any model that exposes an OpenAI-compatible API endpoint. Common local models include:
 
-| Model Type | Max Tokens | Description |
-|------------|------------|-------------|
-| `llama2:*` | 4,096 | Llama 2 family models |
-| `codellama:*` | 16,384 | Code Llama models |
-| `mistral:*` | 8,192 | Mistral models |
-| `gpt-*` | 4,096 | GPT family models |
-| Custom models | 8,192 | Any other model names |
+| Model Family | Context Window | Description |
+|--------------|----------------|-------------|
+| **Llama** | 4K-8K tokens | Meta's open-source models |
+| **CodeLlama** | 16K tokens | Specialized for code generation |
+| **Mistral** | 8K tokens | High-performance open models |
+| **Qwen** | 32K tokens | Alibaba's large context models |
+| **Yi** | 16K tokens | 01.AI's open models |
+| **Gemma** | 8K tokens | Google's lightweight models |
+| **Phi** | 2K tokens | Microsoft's compact models |
+
+> **Note**: Token limits vary by model and server configuration. The provider automatically detects common model families and sets appropriate limits.
 
 ## Error Handling
 

@@ -80,6 +80,8 @@ export function grok(opts: GrokOptions): Provider {
 
         // Add optional parameters
         if (req.stop) requestBody.stop = req.stop;
+        if (req.seed !== undefined) requestBody.seed = req.seed;
+        if (req.logitBias !== undefined) requestBody.logit_bias = req.logitBias;
         if (
           req.systemPrompt &&
           !req.messages.some((m) => m.role === "system")
@@ -89,6 +91,8 @@ export function grok(opts: GrokOptions): Provider {
             ...req.messages,
           ];
         }
+        if (req.responseFormat !== undefined)
+          requestBody.response_format = { type: req.responseFormat };
 
         const res = await doFetch(`${baseURL}/chat/completions`, {
           method: "POST",
@@ -176,6 +180,8 @@ export function grok(opts: GrokOptions): Provider {
 
         // Add optional parameters
         if (req.stop) requestBody.stop = req.stop;
+        if (req.seed !== undefined) requestBody.seed = req.seed;
+        if (req.logitBias !== undefined) requestBody.logit_bias = req.logitBias;
         if (
           req.systemPrompt &&
           !req.messages.some((m) => m.role === "system")
@@ -185,6 +191,8 @@ export function grok(opts: GrokOptions): Provider {
             ...req.messages,
           ];
         }
+        if (req.responseFormat !== undefined)
+          requestBody.response_format = { type: req.responseFormat };
 
         const res = await doFetch(`${baseURL}/chat/completions`, {
           method: "POST",
@@ -273,6 +281,10 @@ export function grok(opts: GrokOptions): Provider {
         "grok-beta-vision",
         "grok-beta-2",
         "grok-beta-2-vision",
+        "grok-2",
+        "grok-2-vision",
+        "grok-2-mini",
+        "grok-2-mini-vision",
       ];
       return validModels.some((model) => modelId.startsWith(model));
     },
@@ -280,6 +292,7 @@ export function grok(opts: GrokOptions): Provider {
     // Get max tokens for model
     getMaxTokens(modelId: string): number {
       if (modelId.includes("vision")) return 128000;
+      if (modelId.includes("grok-2")) return 128000;
       if (modelId.includes("beta-2")) return 128000;
       return 8192; // default for grok-beta
     },

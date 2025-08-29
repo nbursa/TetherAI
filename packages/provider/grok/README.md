@@ -100,126 +100,52 @@ const maxTokens = provider.getMaxTokens("grok-beta");
 console.log("Max tokens:", maxTokens);
 ```
 
-## API Reference
+## Parameter Mapping
 
-### Provider Configuration
+| TS Interface Field  | Grok API Field             |
+|---------------------|----------------------------|
+| `maxTokens`         | `max_tokens`               |
+| `topP`              | `top_p`                    |
+| `responseFormat`    | `response_format.type`     |
+
+Grok follows an OpenAI‑compatible schema and these fields are mapped automatically.
+
+## Middleware Compatibility
+
+| Feature        | Support |
+|----------------|---------|
+| `withRetry`    | ✅       |
+| `withFallback` | ✅       |
+
+## Configuration Options
+
+### Grok Provider Options
 
 ```ts
 interface GrokOptions {
-  apiKey: string;           // Required: Your Grok API key
-  baseURL?: string;         // Optional: Custom API endpoint (default: https://api.x.ai/v1)
-  timeout?: number;         // Optional: Request timeout in milliseconds (default: 30000)
-  maxRetries?: number;      // Optional: Built-in retry attempts (default: 2)
-  fetch?: typeof fetch;     // Optional: Custom fetch implementation
+  apiKey: string;                    // Required: Your xAI API key
+  baseURL?: string;                  // Custom API endpoint (default: https://api.x.ai/v1)
+  timeout?: number;                  // Request timeout in ms (default: 30000)
+  fetch?: Function;                  // Custom fetch implementation
 }
 ```
 
-### Streaming Chat
+### Supported Models
 
-```ts
-const stream = provider.streamChat({
-  model: "grok-beta",                    // Required: Model to use
-  messages: [                            // Required: Conversation history
-    { role: "user", content: "Hello" }
-  ],
-  temperature: 0.7,                      // Optional: Randomness (0.0 to 2.0)
-  maxTokens: 1000,                       // Optional: Max tokens to generate
-  topP: 0.9,                            // Optional: Nucleus sampling
-  frequencyPenalty: 0.1,                // Optional: Repetition penalty
-  presencePenalty: 0.1,                 // Optional: Topic penalty
-  stop: ["\n", "END"],                  // Optional: Stop sequences
-  systemPrompt: "You are helpful"       // Optional: System instructions
-});
+Grok provider supports the following models:
 
-// Process streaming response
-for await (const chunk of stream) {
-  if (chunk.done) break;
-  process.stdout.write(chunk.delta);
-}
-```
+| Model | Context Window | Description |
+|-------|----------------|-------------|
+| `grok-beta` | 8K tokens | Base Grok model |
+| `grok-beta-vision` | 128K tokens | Grok with vision capabilities |
+| `grok-beta-2` | 128K tokens | Enhanced Grok model |
+| `grok-beta-2-vision` | 128K tokens | Enhanced Grok with vision |
+| `grok-2` | 128K tokens | Latest Grok 2 model |
+| `grok-2-vision` | 128K tokens | Latest Grok 2 with vision |
+| `grok-2-mini` | 128K tokens | Compact Grok 2 model |
+| `grok-2-mini-vision` | 128K tokens | Compact Grok 2 with vision |
 
-### Non-Streaming Chat
-
-```ts
-const response = await provider.chat({
-  model: "grok-beta",
-  messages: [{ role: "user", content: "Hello" }],
-  temperature: 0.7,
-  maxTokens: 1000,
-  responseFormat: "json_object"  // Get structured responses
-});
-
-console.log(response.content);
-console.log(`Model: ${response.model}`);
-console.log(`Finish reason: ${response.finishReason}`);
-console.log(`Usage: ${response.usage.totalTokens} tokens`);
-```
-
-### Model Management
-
-```ts
-// List available models
-const models = await provider.getModels();
-// Returns: ['grok-beta', 'grok-beta-vision', 'grok-beta-2', 'grok-beta-2-vision']
-
-// Validate model ID
-const isValid = provider.validateModel("grok-beta");     // true
-const isInvalid = provider.validateModel("gpt-4");       // false
-
-// Get token limits
-const maxTokens = provider.getMaxTokens("grok-beta");           // 8192
-const visionTokens = provider.getMaxTokens("grok-beta-vision"); // 128000
-```
-
-## Supported Models
-
-| Model | Context | Description |
-|-------|---------|-------------|
-| `grok-beta` | 8K | Base Grok model for text generation |
-| `grok-beta-vision` | 128K | Grok with vision capabilities |
-| `grok-beta-2` | 128K | Enhanced Grok model |
-| `grok-beta-2-vision` | 128K | Enhanced Grok with vision |
-
-## Error Handling
-
-The provider throws `GrokError` for API-related errors:
-
-```ts
-import { GrokError } from "@tetherai/grok";
-
-try {
-  const response = await provider.chat({
-    model: "grok-beta",
-    messages: [{ role: "user", content: "Hello" }]
-  });
-} catch (error) {
-  if (error instanceof GrokError) {
-    console.error(`Grok API Error ${error.status}: ${error.message}`);
-    
-    switch (error.status) {
-      case 401:
-        console.error("Invalid API key");
-        break;
-      case 429:
-        console.error("Rate limit exceeded");
-        break;
-      case 500:
-        console.error("Server error");
-        break;
-      default:
-        console.error("Unexpected error");
-    }
-  }
-}
-```
-
-### Error Types
-
-- `GrokError` - Base error class with HTTP status and message
-- `401` - Authentication failed (invalid API key)
-- `429` - Rate limit exceeded
-- `500` - Server error
-- `400` - Bad request (invalid parameters)
+> **Note**: Vision models support image input and have larger context windows.
 
 ## Middleware
 

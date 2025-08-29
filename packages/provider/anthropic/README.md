@@ -38,6 +38,8 @@ yarn add @tetherai/anthropic
 
 **That's it!** No additional packages needed - everything is included.
 
+> **⚠️ Important**: Anthropic API requires `maxTokens` parameter. If you don't provide it, the API will return a 400 error. Always include `maxTokens` in your requests.
+
 ### Basic Usage
 
 Set your API key:
@@ -179,6 +181,29 @@ const response = await provider.chat({
   }
 });
 ```
+
+## Parameter Mapping
+
+| TS Interface Field  | Anthropic API Field        |
+|---------------------|----------------------------|
+| `maxTokens`         | `max_tokens`               |
+| `topP`              | `top_p`                    |
+| `topK`              | `top_k`                    |
+| `responseFormat`    | `response_format.type`     |
+| `user`              | `metadata.user`            |
+| `metadata`          | `metadata` (merged)        |
+
+> Note: `user` is mapped to `metadata.user` because Anthropic does not support a top‑level `user` field.
+> Optional `anthropic-beta` header can be passed via `beta` field in options.
+
+## Middleware Compatibility
+
+| Feature        | Support |
+|----------------|---------|
+| `withRetry`    | ✅       |
+| `withFallback` | ✅       |
+
+Wrap the provider with `withRetry(...)` or `withFallback([...])` to add resilience without changing your code.
 
 ### Streaming with Enhanced Options
 

@@ -122,6 +122,7 @@ export interface AnthropicOptions {
   apiKey: string;
   baseURL?: string; // default: https://api.anthropic.com/v1
   apiVersion?: string; // default: 2023-06-01
+  beta?: string; // anthropic-beta header value
   maxRetries?: number;
   timeout?: number;
   fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;

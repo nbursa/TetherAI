@@ -58,7 +58,19 @@ function toAnthropicPayload(req: ChatRequest) {
   if (req.topP !== undefined) payload.top_p = req.topP;
   if (req.topK !== undefined) payload.top_k = req.topK;
   if (req.stop !== undefined) payload.stop_sequences = req.stop;
-  if (req.user !== undefined) payload.user = req.user;
+  if (req.logitBias !== undefined) payload.logit_bias = req.logitBias;
+  // No direct user field; handled below
+
+  if (req.responseFormat !== undefined)
+    payload.response_format = { type: req.responseFormat };
+  if (req.metadata !== undefined || req.user !== undefined) {
+    payload.metadata = {
+      ...(req.metadata as Record<string, unknown> | undefined),
+    };
+    if (req.user !== undefined) {
+      (payload.metadata as Record<string, unknown>).user = req.user;
+    }
+  }
 
   return payload;
 }
@@ -104,6 +116,7 @@ export function anthropic(opts: AnthropicOptions): Provider {
             "content-type": "application/json",
             "x-api-key": opts.apiKey,
             "anthropic-version": apiVersion,
+            ...(opts.beta ? { "anthropic-beta": opts.beta } : {}),
           },
           body: JSON.stringify(toAnthropicPayload(req)),
           signal: signal || controller.signal,
@@ -171,6 +184,7 @@ export function anthropic(opts: AnthropicOptions): Provider {
             "content-type": "application/json",
             "x-api-key": opts.apiKey,
             "anthropic-version": apiVersion,
+            ...(opts.beta ? { "anthropic-beta": opts.beta } : {}),
           },
           body: JSON.stringify(payload),
           signal: signal || controller.signal,
@@ -254,11 +268,11 @@ export function anthropic(opts: AnthropicOptions): Provider {
     // Validate model ID
     validateModel(modelId: string): boolean {
       const validModels = [
-        "claude-3-5-sonnet",
-        "claude-3-5-haiku",
-        "claude-3-opus",
-        "claude-3-sonnet",
-        "claude-3-haiku",
+        "claude-3-5-sonnet-20241022",
+        "claude-3-5-haiku-20241022",
+        "claude-3-opus-20240229",
+        "claude-3-sonnet-20240229",
+        "claude-3-haiku-20240307",
         "claude-2.1",
         "claude-2.0",
         "claude-instant-1.2",

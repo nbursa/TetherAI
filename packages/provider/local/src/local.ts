@@ -81,6 +81,8 @@ export function localLLM(opts: LocalLLMOptions): Provider {
 
         // Add optional parameters
         if (req.stop) requestBody.stop = req.stop;
+        if (req.seed !== undefined) requestBody.seed = req.seed;
+        if (req.logitBias !== undefined) requestBody.logit_bias = req.logitBias;
         if (
           req.systemPrompt &&
           !req.messages.some((m) => m.role === "system")
@@ -90,6 +92,8 @@ export function localLLM(opts: LocalLLMOptions): Provider {
             ...req.messages,
           ];
         }
+        if (req.responseFormat !== undefined)
+          requestBody.response_format = { type: req.responseFormat };
 
         // Prepare headers
         const headers: Record<string, string> = {
@@ -183,6 +187,8 @@ export function localLLM(opts: LocalLLMOptions): Provider {
 
         // Add optional parameters
         if (req.stop) requestBody.stop = req.stop;
+        if (req.seed !== undefined) requestBody.seed = req.seed;
+        if (req.logitBias !== undefined) requestBody.logit_bias = req.logitBias;
         if (
           req.systemPrompt &&
           !req.messages.some((m) => m.role === "system")
@@ -192,6 +198,8 @@ export function localLLM(opts: LocalLLMOptions): Provider {
             ...req.messages,
           ];
         }
+        if (req.responseFormat !== undefined)
+          requestBody.response_format = { type: req.responseFormat };
 
         // Prepare headers
         const headers: Record<string, string> = {
@@ -291,13 +299,19 @@ export function localLLM(opts: LocalLLMOptions): Provider {
 
     // Get max tokens for model (default for local models)
     getMaxTokens(modelId: string): number {
-      // Local models typically have large context windows
-      // This can be customized based on the specific model
-      if (modelId.includes("llama") || modelId.includes("llama2")) return 4096;
+      // Modern local models have much larger context windows
+      if (modelId.includes("llama3") || modelId.includes("llama-3"))
+        return 8192;
+      if (modelId.includes("llama2") || modelId.includes("llama-2"))
+        return 4096;
       if (modelId.includes("codellama")) return 16384;
       if (modelId.includes("mistral")) return 8192;
       if (modelId.includes("gpt")) return 4096;
-      return 8192; // default for unknown local models
+      if (modelId.includes("qwen")) return 32768;
+      if (modelId.includes("yi")) return 16384;
+      if (modelId.includes("gemma")) return 8192;
+      if (modelId.includes("phi")) return 2048;
+      return 32768; // Default to large context for modern models
     },
   };
 }

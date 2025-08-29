@@ -80,6 +80,10 @@ export function mistral(opts: MistralOptions): Provider {
         if (req.presencePenalty !== undefined)
           requestBody.presence_penalty = req.presencePenalty;
         if (req.stop !== undefined) requestBody.stop = req.stop;
+        if (req.seed !== undefined) requestBody.seed = req.seed;
+        if (req.randomSeed !== undefined)
+          requestBody.random_seed = req.randomSeed;
+        if (req.logitBias !== undefined) requestBody.logit_bias = req.logitBias;
         if (req.responseFormat !== undefined)
           requestBody.response_format = { type: req.responseFormat };
         if (req.user !== undefined) requestBody.user = req.user;
@@ -167,6 +171,10 @@ export function mistral(opts: MistralOptions): Provider {
         if (req.presencePenalty !== undefined)
           requestBody.presence_penalty = req.presencePenalty;
         if (req.stop !== undefined) requestBody.stop = req.stop;
+        if (req.seed !== undefined) requestBody.seed = req.seed;
+        if (req.randomSeed !== undefined)
+          requestBody.random_seed = req.randomSeed;
+        if (req.logitBias !== undefined) requestBody.logit_bias = req.logitBias;
         if (req.responseFormat !== undefined)
           requestBody.response_format = { type: req.responseFormat };
         if (req.user !== undefined) requestBody.user = req.user;
@@ -262,20 +270,24 @@ export function mistral(opts: MistralOptions): Provider {
         "mistral-large-latest",
         "mistral-medium-latest",
         "mistral-small-latest",
-        "mistral-7b-instruct",
-        "mistral-7b-instruct-v0.2",
         "mistral-7b-instruct-v0.3",
         "open-mistral-7b",
         "open-mixtral-8x7b",
         "open-mixtral-8x22b",
+        "mistral-large-2",
+        "mistral-medium-2",
+        "mistral-small-2",
       ];
       return validModels.some((model) => modelId.startsWith(model));
     },
 
     // Get max tokens for model
     getMaxTokens(modelId: string): number {
+      if (modelId.includes("large-2")) return 131072;
       if (modelId.includes("large")) return 32768;
+      if (modelId.includes("medium-2")) return 65536;
       if (modelId.includes("medium")) return 16384;
+      if (modelId.includes("small-2")) return 32768;
       if (modelId.includes("small")) return 8192;
       if (modelId.includes("mixtral-8x22b")) return 65536;
       if (modelId.includes("mixtral-8x7b")) return 32768;
