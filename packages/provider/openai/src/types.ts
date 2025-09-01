@@ -1,20 +1,4 @@
-// Shared types for all TetherAI providers
-// This file gets copied into each provider package during build
-
 export type Role = "user" | "assistant" | "system" | "tool";
-
-export interface ModelInfo {
-  id: string;
-  name: string;
-  maxTokens: number;
-  supportsStreaming: boolean;
-  supportsFunctionCalling: boolean;
-  supportsMultiModal: boolean;
-  pricing: {
-    input: number; // per 1K tokens
-    output: number; // per 1K tokens
-  };
-}
 
 export interface ChatMessage {
   role: Role;
@@ -24,46 +8,25 @@ export interface ChatMessage {
 export interface ChatRequest {
   model: string;
   messages: ChatMessage[];
-
-  // Core chat parameters
-  temperature?: number; // 0-2, default: 1
-  maxTokens?: number; // 1-4096, default: unlimited
-  topP?: number; // 0-1, default: 1
-  frequencyPenalty?: number; // -2.0 to 2.0, default: 0
-  presencePenalty?: number; // -2.0 to 2.0, default: 0
-
-  // Stop sequences
-  stop?: string | string[]; // Stop generation at these sequences
-
-  // System behavior
-  systemPrompt?: string; // Alternative to system message
-
-  // Response format
+  temperature?: number;
+  maxTokens?: number;
+  topP?: number;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
+  stop?: string | string[];
+  systemPrompt?: string;
   responseFormat?: "text" | "json_object";
-
-  // Safety and moderation
-  safeMode?: boolean; // Enable content filtering
-
-  // Metadata
-  user?: string; // User identifier for moderation
-  metadata?: Record<string, unknown>; // Custom metadata
-
-  // Enhanced parameters for better API alignment
-  seed?: number; // OpenAI, Mistral: deterministic responses
-  logprobs?: boolean; // OpenAI: return log probabilities
-  randomSeed?: number; // Mistral: alternative to seed
-  logitBias?: Record<string, number>; // OpenAI, Anthropic: bias specific tokens
-  topK?: number; // Anthropic: top-k sampling
-
-  // Extensions
-  [key: string]: unknown; // for additional provider-specific fields
+  user?: string;
+  metadata?: Record<string, unknown>;
+  seed?: number;
+  logprobs?: boolean;
+  logitBias?: Record<string, number>;
+  [key: string]: unknown;
 }
 
 export interface ChatStreamChunk {
   delta: string;
   done?: boolean;
-
-  // Enhanced streaming metadata
   finishReason?: "stop" | "length" | "content_filter" | "tool_calls";
   usage?: {
     promptTokens: number;
@@ -89,26 +52,16 @@ export interface Provider {
     req: ChatRequest,
     signal?: AbortSignal
   ): AsyncIterable<ChatStreamChunk>;
-
   chat(req: ChatRequest, signal?: AbortSignal): Promise<ChatResponse>;
-
-  // Enhanced provider capabilities
   getModels(): Promise<string[]>;
   validateModel(modelId: string): boolean;
   getMaxTokens(modelId: string): number;
 }
 
-// Common error interface
-export interface AIProviderError extends Error {
-  readonly status?: number;
-  readonly code?: string;
-  readonly provider: string;
-}
-
 // OpenAI-specific types
 export interface OpenAIOptions {
   apiKey: string;
-  baseURL?: string; // defaults to https://api.openai.com/v1
+  baseURL?: string;
   organization?: string;
   maxRetries?: number;
   timeout?: number;
@@ -120,25 +73,6 @@ export class OpenAIError extends Error {
   constructor(message: string, status: number) {
     super(message);
     this.name = "OpenAIError";
-    this.status = status;
-  }
-}
-
-// Anthropic-specific types
-export interface AnthropicOptions {
-  apiKey: string;
-  baseURL?: string; // default: https://api.anthropic.com/v1
-  apiVersion?: string; // default: 2023-06-01
-  maxRetries?: number;
-  timeout?: number;
-  fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-}
-
-export class AnthropicError extends Error {
-  readonly status: number;
-  constructor(message: string, status: number) {
-    super(message);
-    this.name = "AnthropicError";
     this.status = status;
   }
 }

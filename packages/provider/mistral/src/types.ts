@@ -1,20 +1,7 @@
-// Shared types for all TetherAI providers
-// This file gets copied into each provider package during build
+// Mistral-specific types for TetherAI provider
+// This file contains only Mistral-specific types and interfaces
 
 export type Role = "user" | "assistant" | "system" | "tool";
-
-export interface ModelInfo {
-  id: string;
-  name: string;
-  maxTokens: number;
-  supportsStreaming: boolean;
-  supportsFunctionCalling: boolean;
-  supportsMultiModal: boolean;
-  pricing: {
-    input: number; // per 1K tokens
-    output: number; // per 1K tokens
-  };
-}
 
 export interface ChatMessage {
   role: Role;
@@ -89,51 +76,6 @@ export interface Provider {
   getModels(): Promise<string[]>;
   validateModel(modelId: string): boolean;
   getMaxTokens(modelId: string): number;
-}
-
-// Common error interface
-export interface AIProviderError extends Error {
-  readonly status?: number;
-  readonly code?: string;
-  readonly provider: string;
-}
-
-// OpenAI-specific types
-export interface OpenAIOptions {
-  apiKey: string;
-  baseURL?: string; // defaults to https://api.openai.com/v1
-  organization?: string;
-  maxRetries?: number;
-  timeout?: number;
-  fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-}
-
-export class OpenAIError extends Error {
-  readonly status: number;
-  constructor(message: string, status: number) {
-    super(message);
-    this.name = "OpenAIError";
-    this.status = status;
-  }
-}
-
-// Anthropic-specific types
-export interface AnthropicOptions {
-  apiKey: string;
-  baseURL?: string; // default: https://api.anthropic.com/v1
-  apiVersion?: string; // default: 2023-06-01
-  maxRetries?: number;
-  timeout?: number;
-  fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-}
-
-export class AnthropicError extends Error {
-  readonly status: number;
-  constructor(message: string, status: number) {
-    super(message);
-    this.name = "AnthropicError";
-    this.status = status;
-  }
 }
 
 // Mistral-specific types
