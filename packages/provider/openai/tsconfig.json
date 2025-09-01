@@ -5,7 +5,9 @@
     "rootDir": ".",
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "module": "ESNext",
+    "moduleResolution": "Node"
   },
   "include": ["src/**/*.ts"]
 }

@@ -23,10 +23,32 @@ async function moveDir(src, dst) {
     }
 }
 
+async function addJsExtensions(dir) {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            await addJsExtensions(fullPath);
+        } else if (entry.name.endsWith('.js')) {
+            const content = await fs.readFile(fullPath, 'utf8');
+            const updatedContent = content.replace(
+                /from\s+["'](\.\/[^"']+)["']/g,
+                (match, importPath) => {
+                    if (!importPath.endsWith('.js') && !importPath.endsWith('.json')) {
+                        return match.replace(importPath, importPath + '.js');
+                    }
+                    return match;
+                }
+            );
+            await fs.writeFile(fullPath, updatedContent);
+        }
+    }
+}
 
 (async function main() {
     await rmrf(SRC_OUT);
     await moveDir(SRC_IN, SRC_OUT);
+    await addJsExtensions(SRC_OUT);
     await rmrf(BUILD);
     console.log("✅ Build completed successfully!");
 })().catch(e => { console.error(e); process.exit(1); });
