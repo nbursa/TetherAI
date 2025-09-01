@@ -1,39 +1,31 @@
-import { copyFile, mkdir } from "fs/promises";
-import { join } from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 
-const sourceDir = join(process.cwd(), "dist");
-const distDir = join(process.cwd(), "dist", "src");
+const PKG_DIR = process.cwd();
+const BUILD = path.join(PKG_DIR, "dist/build");
+const OUT = path.join(PKG_DIR, "dist");
 
-async function main() {
-    try {
-        // Ensure dist directory exists
-        await mkdir(distDir, { recursive: true });
+const SRC_IN = path.join(BUILD, "src");
+const SRC_OUT = path.join(OUT, "src");
 
-        // Copy source files to dist
-        const files = [
-            "index.js",
-            "local.js",
-            "types.js",
-            "middleware.js",
-            "sse.js"
-        ];
-
-        for (const file of files) {
-            const source = join(sourceDir, file);
-            const dest = join(distDir, file);
-            try {
-                await copyFile(source, dest);
-                console.log(`Copied ${file}`);
-            } catch {
-                console.log(`Skipped ${file} (may not exist yet)`);
-            }
+async function rmrf(p) { await fs.rm(p, { recursive: true, force: true }); }
+async function mkdirp(p) { await fs.mkdir(p, { recursive: true }); }
+async function moveDir(src, dst) {
+    await mkdirp(path.dirname(dst));
+    try { await fs.rename(src, dst); }
+    catch {
+        const entries = await fs.readdir(src, { withFileTypes: true });
+        await mkdirp(dst);
+        for (const e of entries) {
+            const s = path.join(src, e.name), d = path.join(dst, e.name);
+            if (e.isDirectory()) await moveDir(s, d); else await fs.copyFile(s, d);
         }
-
-        console.log("Local LLM provider build completed!");
-    } catch (error) {
-        console.error("Build failed:", error);
-        process.exit(1);
     }
 }
 
-main();
+(async function main() {
+    await rmrf(SRC_OUT);
+    await moveDir(SRC_IN, SRC_OUT);
+    await rmrf(BUILD);
+    console.log("✅ Build completed successfully!");
+})().catch(e => { console.error(e); process.exit(1); });
